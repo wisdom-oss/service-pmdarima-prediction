@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+from flask import jsonify
+
 
 def read_smartmeter_data():
     abs_path = (os.path.abspath("").replace("\\", "/") + "/smartmeterdata/example_pm_measurements.json")
@@ -7,8 +9,22 @@ def read_smartmeter_data():
 
     return df
 
+def get_meter_information():
+    df = read_smartmeter_data()
+    df = df['refDevice']
 
-def transform_data(meter_short_name, *nrows: int):
+    ls = []
+    for entry in df:
+        if entry in ls:
+            pass
+        else:
+            ls.append(entry)
+
+    data = {"data": ls}
+    return jsonify(data)
+
+
+def extract_single_smartmeter(meter_short_name, *nrows: int):
     """
     read in smartmeter data based on which smartmeter to extract and how many rows to utilize
     :param meter_short_name: single/family/atypical/retired
@@ -33,4 +49,4 @@ def transform_data(meter_short_name, *nrows: int):
 
     json_data["name"] = meter_name
 
-    return json_data
+    return jsonify(json_data)
