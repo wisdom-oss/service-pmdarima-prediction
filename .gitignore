@@ -6,3 +6,4 @@ __pycache__/
 
 .idea/*
 
+/smartmeterdata/__pycache__
