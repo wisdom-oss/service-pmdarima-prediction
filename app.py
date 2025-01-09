@@ -16,16 +16,18 @@ prefix = os.getenv("API_PREFIX")
 def hello_world():
     return "<p>Hello, World!</p>"
 
+
 @app.route(prefix + "/meterInformation", methods = ["GET"])
 def meterInformation():
     return st.get_meter_information()
+
 
 @app.route(prefix + "/singleRealData", methods = ["GET"])
 def getRealData():
     data = st.extract_single_smartmeter("single", 100)
     return data
 
-@app.route(prefix + "/postRequest", methods = ["POST"])
+#@app.route(prefix + "/postRequest", methods = ["POST"])
 def getRealData():
     # request library? Handle Post Requests
     data = st.extract_single_smartmeter("single", 100)
