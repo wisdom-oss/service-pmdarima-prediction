@@ -1,8 +1,8 @@
 import os
 
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
-from smartmeterdata import smartmeter_transformer as st
+from smartmeterdata import json_reader as st
 from dotenv import load_dotenv
 
 app = Flask(__name__)
@@ -16,21 +16,14 @@ prefix = os.getenv("API_PREFIX")
 def hello_world():
     return "<p>Hello, World!</p>"
 
-
 @app.route(prefix + "/meterInformation", methods = ["GET"])
 def meterInformation():
-    return st.get_meter_information()
+    return st.read_meter_information()
 
-
-@app.route(prefix + "/singleRealData", methods = ["GET"])
-def getRealData():
-    data = st.extract_single_smartmeter("single", 100)
-    return data
-
-#@app.route(prefix + "/postRequest", methods = ["POST"])
-def getRealData():
-    # request library? Handle Post Requests
-    data = st.extract_single_smartmeter("single", 100)
+@app.route(prefix + "/singleSmartmeter", methods = ["POST"])
+def getDataOfSmartmeter():
+    response = request.json
+    data = st.extract_single_smartmeter(response["name"], 1000)
     return data
 
 if __name__ == "__main__":
