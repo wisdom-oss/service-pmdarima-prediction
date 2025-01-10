@@ -10,7 +10,7 @@ def read_smartmeter_data(metaCheck: bool):
     :return: df containing data
     """
 
-    abs_path = (os.path.abspath("").replace("\\", "/") + "/files")
+    abs_path = (os.path.abspath("").replace("\\", "/") + "/files/smartmeterdata")
 
     if metaCheck:
         path = abs_path + "/example_pm_meta.json"

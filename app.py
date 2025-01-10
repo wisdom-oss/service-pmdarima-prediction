@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, request
 from flask_cors import CORS
-from smartmeterdata import json_reader as st
+from files import json_reader as st
 from dotenv import load_dotenv
 
 app = Flask(__name__)
