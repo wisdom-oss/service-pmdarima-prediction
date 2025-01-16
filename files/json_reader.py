@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 from flask import jsonify
+from files import transformer as t
 
 
 def read_smartmeter_data(metaCheck: bool):
@@ -28,7 +29,7 @@ def read_meter_information():
     return jsonify(data)
 
 
-def extract_single_smartmeter(meter_name, *nrows: int):
+def extract_single_smartmeter(meter_name:str, timeframe:str, startingTime: str):
     """
     read in smartmeter data based on which smartmeter to extract and how many rows to utilize
     :param meter_name: name of the refDevice
@@ -38,17 +39,6 @@ def extract_single_smartmeter(meter_name, *nrows: int):
 
     df = read_smartmeter_data(False)
 
-    # filter every meter not being named
-    df = df.drop(df[df.refDevice != meter_name].index)
-
-    df = df[["dateObserved", "numValue"]]
-
-    if nrows:
-        # index 0, nrows is a tuple -> optional argument
-        df = df.iloc[:nrows[0]]
-
-    json_data = df.to_dict(orient="list")
-
-    json_data["name"] = meter_name
+    json_data = t.transform_single_meter_request(df, meter_name, timeframe, startingTime)
 
     return jsonify(json_data)

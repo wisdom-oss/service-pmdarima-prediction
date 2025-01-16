@@ -23,7 +23,7 @@ def meterInformation():
 @app.route(prefix + "/singleSmartmeter", methods = ["POST"])
 def getDataOfSmartmeter():
     response = request.json
-    data = st.extract_single_smartmeter(response["name"], 1000)
+    data = st.extract_single_smartmeter(response["name"], response["timeframe"], response["startingTime"])
     return data
 
 if __name__ == "__main__":
