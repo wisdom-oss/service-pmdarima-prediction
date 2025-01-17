@@ -1,0 +1,9 @@
+A. Show values of the measured PMs
+
+1. function to supply forecasted weather values
+	24h Format 
+	07d Format
+	30d Format
+
+2. Show confidence Intervalls in angular
+3. Api call over how many entries are being calculated

@@ -9,7 +9,6 @@ app = Flask(__name__)
 CORS(app)
 
 load_dotenv()
-
 prefix = os.getenv("API_PREFIX")
 
 @app.route(prefix + "/helloworld", methods = ["GET"])
@@ -21,7 +20,7 @@ def meterInformation():
     return st.read_meter_information()
 
 @app.route(prefix + "/singleSmartmeter", methods = ["POST"])
-def getDataOfSmartmeter():
+def requestSingleSmartmeter():
     """
     get data of a chosen smartmeter and chosen timely frame
     :return: amount of smartmeter data
