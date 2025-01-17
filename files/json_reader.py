@@ -60,7 +60,10 @@ def extract_single_smartmeter(meter_name, timeframe: str):
 
     # ignore warning
     pd.options.mode.chained_assignment = None  # default='warn'
-    filtered_df["dateObserved"] = filtered_df["dateObserved"].dt.strftime("%d.%m.%y %H:%M:%S")
+    if timeframe == "one day" or timeframe == "one week" or timeframe == "one month":
+        filtered_df["dateObserved"] = filtered_df["dateObserved"].dt.strftime("%d.%m.%y %H:%M:%S")
+    else:
+        filtered_df["dateObserved"] = filtered_df["dateObserved"].dt.strftime("%d.%m.%y")
 
     json_data = filtered_df.to_dict(orient="list")
 
