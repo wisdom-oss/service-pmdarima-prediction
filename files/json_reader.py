@@ -29,9 +29,10 @@ def read_meter_information():
     data = {"data": df["id"].to_list()}
     return jsonify(data)
 
-def extract_single_smartmeter(meter_name, timeframe: str):
+def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
     """
     extract single smartmeter data
+    :param resolution: resolution of the requested data: hourly, daily, weekly
     :param meter_name: name of smartmeter
     :param timeframe: timely frame how many rows are being extracted
     :return: json resp of meter_name and extracted values + dates
@@ -44,30 +45,25 @@ def extract_single_smartmeter(meter_name, timeframe: str):
 
     df = df[["dateObserved", "numValue"]]
 
+    # extract start point of data and calculate end point
     load_dotenv()
-
-    # extract start_point and convert to timestamp
-    start_point = pd.to_datetime(os.getenv("STARTING_DATE_SMARTMETER"))
-    df["dateObserved"] = pd.to_datetime(df["dateObserved"])
-
-    # find the end date to request based on the timeframe
-    end = __calculate_end_date(start_point, timeframe)
-
-    # filter df based on date and convert to right format as strings
-    filtered_df = df[(df["dateObserved"] >= start_point) & (df["dateObserved"] < end)]
-
-    filtered_df = __reduce_data_points(timeframe, filtered_df)
+    start = pd.to_datetime(os.getenv("STARTING_DATE_SMARTMETER"))
+    end = __calculate_end_date(start, timeframe)
+    # filter df by start and end
+    df = __filter_df_by_endpoint(df, start, end)
 
     # ignore warning
-    pd.options.mode.chained_assignment = None  # default='warn'
-    if timeframe == "one day" or timeframe == "one week" or timeframe == "one month":
-        filtered_df["dateObserved"] = filtered_df["dateObserved"].dt.strftime("%d.%m.%y %H:%M:%S")
-    else:
-        filtered_df["dateObserved"] = filtered_df["dateObserved"].dt.strftime("%d.%m.%y")
+    # pd.options.mode.chained_assignment = None  # default='warn'
 
-    json_data = filtered_df.to_dict(orient="list")
+    df = __reduce_data_points(df, resolution)
 
-    json_data["name"] = f"{meter_name} {timeframe}"
+    df = __change_label_data(df, resolution)
+
+    json_data = df.to_dict(orient="list")
+
+    json_data["name"] = f"{meter_name}-{timeframe}-{resolution}"
+
+    json_data["resolution"] = f"{resolution}"
 
     return jsonify(json_data)
 
@@ -95,18 +91,52 @@ def __calculate_end_date(start_point, timeframe):
         case "one year":
             # BUGGED -> OutOfBounds
             end = start_point + relativedelta(years=1)
+        case "all":
+            pass
 
     return end
 
-def __reduce_data_points(timeframe, df):
+def __filter_df_by_endpoint(df, start, end: str):
 
-    if timeframe == "one day" or timeframe == "one week" or timeframe == "one month":
-        return df
+    # extract start_point and convert to timestamp
+    df["dateObserved"] = pd.to_datetime(df["dateObserved"])
 
-    # Set the 'dateObserved' column as the index
-    df.set_index('dateObserved', inplace=True)
+    if end != start:
+        filtered_df = df[(df["dateObserved"] >= start) & (df["dateObserved"] < end)]
+    else:
+        filtered_df = df
 
-    # Resample the data by day and calculate the average of 'numValue'
-    daily_avg = df.resample('D')['numValue'].mean().reset_index()
+    return filtered_df
 
-    return daily_avg
+def __reduce_data_points(df, resolution: str):
+    # set date index
+    df = df.set_index("dateObserved")
+
+    modifier = ""
+
+    match resolution:
+        case "hourly":
+            modifier = "h"
+        case "daily":
+            modifier = "D"
+            print("resample data to daily values")
+        case "weekly":
+            modifier = "W"
+            print("resample data to weekly values")
+
+    avg = df.resample(modifier)["numValue"].mean()
+    avg = avg.reset_index()
+
+    return avg
+
+def __change_label_data(df, resolution):
+
+    match resolution:
+        case "hourly":
+            df["dateObserved"] = df["dateObserved"].dt.strftime("%d.%m.%y %H:%M:%S")
+        case "daily":
+            df["dateObserved"] = df["dateObserved"].dt.strftime("%d.%m.%y")
+        case "weekly":
+            df["dateObserved"] = df["dateObserved"].dt.strftime("%d.%m.%y")
+
+    return df

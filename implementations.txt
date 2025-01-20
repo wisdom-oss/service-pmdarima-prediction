@@ -1,10 +1,9 @@
 A. Show values of the measured PMs
 
 1. function to supply forecasted weather values
-	24h Format 3m
-	07d Format 6m
-	30d Format 1year
+	hourly format:  24h     daily format:   03m
+	                07d                     06m
+	                30d                     12m
 
-	When using 3m or more -> daily averages are shown
-	BUG: hourly values are being treated as daily values in that case.
+
 

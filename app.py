@@ -20,13 +20,16 @@ def meterInformation():
     return st.read_meter_information()
 
 @app.route(prefix + "/singleSmartmeter", methods = ["POST"])
-def requestSingleSmartmeter():
+def single_smartmeter_hourly():
     """
     get data of a chosen smartmeter and chosen timely frame
     :return: amount of smartmeter data
     """
     response = request.json
-    data = st.extract_single_smartmeter(response["name"], response["timeframe"])
+    data = st.extract_single_smartmeter(response["name"],
+                                        response["timeframe"],
+                                        response["resolution"]
+                                        )
     return data
 
 if __name__ == "__main__":
