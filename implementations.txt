@@ -1,9 +1,10 @@
 A. Show values of the measured PMs
 
 1. function to supply forecasted weather values
-	24h Format 
-	07d Format
-	30d Format
+	24h Format 3m
+	07d Format 6m
+	30d Format 1year
 
-2. Show confidence Intervalls in angular
-3. Api call over how many entries are being calculated
+	When using 3m or more -> daily averages are shown
+	BUG: hourly values are being treated as daily values in that case.
+
