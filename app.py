@@ -17,7 +17,10 @@ def hello_world():
 
 @app.route(prefix + "/meterInformation", methods = ["GET"])
 def meterInformation():
-    return st.read_meter_information()
+
+    data = st.read_meter_information()
+
+    return data
 
 @app.route(prefix + "/singleSmartmeter", methods = ["POST"])
 def single_smartmeter_hourly():

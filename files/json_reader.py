@@ -26,8 +26,17 @@ def read_smartmeter_data(metaCheck: bool):
 def read_meter_information():
     df = read_smartmeter_data(True)
 
-    data = {"data": df["id"].to_list()}
-    return jsonify(data)
+    load_dotenv()
+    prefix = os.getenv("DEVICE_PREFIX")
+
+    short_handles = {}
+
+    for item in df["id"].to_list():
+        if prefix in item:
+            short = item.replace(prefix, "")
+            short_handles[item] = short
+
+    return jsonify(short_handles)
 
 def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
     """
