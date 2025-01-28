@@ -61,17 +61,14 @@ def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
     # filter df by start and end
     df = __filter_df_by_endpoint(df, start, end)
 
-    # ignore warning
-    # pd.options.mode.chained_assignment = None  # default='warn'
-
     df = __reduce_data_points(df, resolution)
 
     df = __change_label_data(df, resolution)
 
     json_data = df.to_dict(orient="list")
 
-    json_data["name"] = f"{meter_name}-{timeframe}-{resolution}"
-
+    json_data["name"] = f"{meter_name}"
+    json_data["timeframe"] = f"{timeframe}"
     json_data["resolution"] = f"{resolution}"
 
     return jsonify(json_data)
@@ -142,10 +139,13 @@ def __change_label_data(df, resolution):
 
     match resolution:
         case "hourly":
-            df["dateObserved"] = df["dateObserved"].dt.strftime("%d.%m.%y %H:%M:%S")
+            # use day and time format
+            df["dateObserved"] = df["dateObserved"].dt.strftime("%d.%m.%y %H:%M")
         case "daily":
+            # only use day format
             df["dateObserved"] = df["dateObserved"].dt.strftime("%d.%m.%y")
         case "weekly":
-            df["dateObserved"] = df["dateObserved"].dt.strftime("%d.%m.%y")
+            # use calender week format
+            df["dateObserved"] = df["dateObserved"].dt.strftime("%V-%y")
 
     return df
