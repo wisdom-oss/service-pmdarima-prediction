@@ -40,6 +40,25 @@ def read_meter_information():
 
 def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
     """
+    extracts data from a single smartmeter and transforms it into json data
+    :param meter_name: name of meter
+    :param timeframe: relation of length
+    :param resolution: resolution of data points
+    :return: the created df
+    """
+
+    df = create_df_from_smartmeter(meter_name, timeframe, resolution)
+
+    json_data = df.to_dict(orient="list")
+
+    json_data["name"] = f"{meter_name}"
+    json_data["timeframe"] = f"{timeframe}"
+    json_data["resolution"] = f"{resolution}"
+
+    return json_data
+
+def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str):
+    """
     extract single smartmeter data
     :param resolution: resolution of the requested data: hourly, daily, weekly
     :param meter_name: name of smartmeter
@@ -65,13 +84,7 @@ def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
 
     df = __change_label_data(df, resolution)
 
-    json_data = df.to_dict(orient="list")
-
-    json_data["name"] = f"{meter_name}"
-    json_data["timeframe"] = f"{timeframe}"
-    json_data["resolution"] = f"{resolution}"
-
-    return jsonify(json_data)
+    return df
 
 def __calculate_end_date(start_point, timeframe):
     """

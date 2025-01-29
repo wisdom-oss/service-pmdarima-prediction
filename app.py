@@ -1,8 +1,9 @@
 import os
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from files import json_reader as st
+from calculations import predictions as pred
 from dotenv import load_dotenv
 
 app = Flask(__name__)
@@ -23,7 +24,7 @@ def meterInformation():
     return data
 
 @app.route(prefix + "/singleSmartmeter", methods = ["POST"])
-def single_smartmeter_hourly():
+def single_smartmeter():
     """
     get data of a chosen smartmeter and chosen timely frame
     :return: amount of smartmeter data
@@ -33,7 +34,20 @@ def single_smartmeter_hourly():
                                         response["timeframe"],
                                         response["resolution"]
                                         )
-    return data
+    return jsonify(data)
+
+@app.route(prefix + "/predSingleSmartmeter", methods = ["POST"])
+def pred_single_smartmeter():
+    """
+    get data of a chosen smartmeter and chosen timely frame
+    :return: predicted values with conf_intervals
+    """
+    response = request.json
+    data = pred.request_forecast(response["name"],
+                                        response["timeframe"],
+                                        response["resolution"]
+                                        )
+    return jsonify(data)
 
 if __name__ == "__main__":
     app.run(port=8080, debug=True, use_reloader=False)
