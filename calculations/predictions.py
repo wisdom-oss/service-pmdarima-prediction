@@ -105,7 +105,7 @@ def create_forecast_data(sarimax_model_without_exo, df: pd.DataFrame):
     upper_series = pd.Series(confint[:, 1], index=future_index)
 
     # create dataframe from separate series
-    final_df = pd.DataFrame({"lower_conf_values": lower_series, "pred_values": fitted_series, "upper_conf_values":upper_series})
+    final_df = pd.DataFrame({"lower_conf_values": lower_series, "numValue": fitted_series, "upper_conf_values":upper_series})
     final_df = final_df.reset_index()
     final_df = final_df.rename(columns={"index":"dateObserved"})
     final_df["dateObserved"] = final_df["dateObserved"].dt.strftime("%d.%m.%y %H:%M")
