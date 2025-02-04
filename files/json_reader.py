@@ -36,7 +36,7 @@ def read_meter_information():
             short = item.replace(prefix, "")
             short_handles[item] = short
 
-    return jsonify(short_handles)
+    return short_handles
 
 def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
     """

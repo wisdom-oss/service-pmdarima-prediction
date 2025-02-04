@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+
 from files import json_reader as st
 from calculations import predictions as pred
 from dotenv import load_dotenv
@@ -19,9 +20,15 @@ def hello_world():
 @app.route(prefix + "/meterInformation", methods = ["GET"])
 def meterInformation():
 
-    data = st.read_meter_information()
+    try:
+        raise ValueError("Bla")
+        return jsonify(st.read_meter_information())
 
-    return data
+    except Exception as e:
+        print(e)
+        # status code decided how angular understands response
+        return jsonify({"error": str(e)}), 400
+
 
 @app.route(prefix + "/singleSmartmeter", methods = ["POST"])
 def single_smartmeter():
