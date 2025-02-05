@@ -21,7 +21,6 @@ def hello_world():
 def meterInformation():
 
     try:
-        raise ValueError("Bla")
         return jsonify(st.read_meter_information())
 
     except Exception as e:
@@ -37,11 +36,15 @@ def single_smartmeter():
     :return: amount of smartmeter data
     """
     response = request.json
-    data = st.extract_single_smartmeter(response["name"],
-                                        response["timeframe"],
-                                        response["resolution"]
-                                        )
-    return jsonify(data)
+
+    try:
+        data = st.extract_single_smartmeter(response["name"],
+                                            response["timeframe"],
+                                            response["resolution"]
+                                            )
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 @app.route(prefix + "/predSingleSmartmeter", methods = ["POST"])
 def pred_single_smartmeter():
@@ -50,11 +53,14 @@ def pred_single_smartmeter():
     :return: predicted values with conf_intervals
     """
     response = request.json
-    data = pred.request_forecast(response["name"],
-                                        response["timeframe"],
-                                        response["resolution"]
-                                        )
-    return jsonify(data)
+    try:
+        data = pred.request_forecast(response["name"],
+                                            response["timeframe"],
+                                            response["resolution"]
+                                            )
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
     app.run(port=8080, debug=True, use_reloader=False)
