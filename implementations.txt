@@ -1,0 +1,9 @@
+A. Show values of the measured PMs
+
+1. function to supply forecasted weather values
+	hourly format:  24h     daily format:   03m
+	                07d                     06m
+	                30d                     12m
+
+
+
