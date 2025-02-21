@@ -53,13 +53,19 @@ def pred_single_smartmeter():
     :return: predicted values with conf_intervals
     """
     response = request.json
+
+    print("Start creating forecast!")
+
     try:
         data = pred.request_forecast(response["name"],
                                             response["timeframe"],
                                             response["resolution"]
                                             )
+
+        print("Creating forecast successfully for: " + response["name"] + "-" + response["timeframe"] + "-" + response["resolution"])
         return jsonify(data)
     except Exception as e:
+        print("Creating forecast failed for: " + response["name"] + "-" + response["timeframe"] + "-" + response["resolution"] + ", because of \n str(e)")
         return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
