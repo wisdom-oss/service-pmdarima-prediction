@@ -56,7 +56,7 @@ def train_model(df: pd.DataFrame):
                                       max_p=3, max_q=3, m=24, # 24 hour service
                                       start_P=0, seasonal=True,
                                       d=None, D=1,
-                                      trace=False,
+                                      trace=1,
                                       error_action='ignore',
                                       suppress_warnings=True,
                                       stepwise=True)
