@@ -1,0 +1,12 @@
+version: '3'
+services:
+  flask-app:
+    image: water-demand-prediction:0.3
+    build: .
+    ports:
+      - "8080:8080"
+    networks:
+      - flask-network
+networks:
+  flask-network:
+    driver: bridge

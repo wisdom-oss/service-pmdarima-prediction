@@ -1,5 +1,3 @@
-import pandas as pd
-
 def transform_single_meter_request(df, meter_name, timeframe, startingTime):
 
     test = df[df.refDevice != meter_name].index
