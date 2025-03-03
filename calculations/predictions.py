@@ -1,8 +1,34 @@
+from files import saving_operations as so
+
 from files import json_reader
 import pandas as pd
 import numpy as np
 import pmdarima as pm
 import matplotlib.pyplot as plt
+
+def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
+    # create a dataframe based on the provided parameters
+    df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution)
+
+    if not so.has_duplicates(meter_name, timeframe, resolution):
+        # train the model if identifier is unique
+        model = __train_model(df)
+        so.save_model_by_name(model, meter_name, timeframe, resolution)
+    else:
+        raise ValueError("model exists already!")
+
+def load_and_use_model(meter_name: str, timeframe: str, resolution: str):
+    model = so.load_model_by_name(meter_name, timeframe, resolution)
+
+    pred_df = __create_forecast_data(model, 24, None)
+
+    # add bonus information back to dataframe
+    json_data = pred_df.to_dict(orient="list")
+    json_data["name"] = f"{meter_name}"
+    json_data["timeframe"] = f"{timeframe}"
+    json_data["resolution"] = f"{resolution}"
+
+    return json_data
 
 def request_forecast(meter_name, timeframe: str, resolution: str):
     """
@@ -21,7 +47,9 @@ def request_forecast(meter_name, timeframe: str, resolution: str):
 
     # create prediction values (series, conf intervals) from trained model
     # hand in number of periods and df of exogenous variables to predict
-    pred_df = __create_forecast_data(model, 24)
+    #pred_df = __create_forecast_data(model, 24)
+
+    pred_df = __create_forecast_data(model, 24, None)
 
     # ADD date labels back HERE
 
@@ -39,18 +67,22 @@ def __train_model(df: pd.DataFrame):
     :param df: df provided based on selected smartmeter data
     :return: trained SARIMAX model
     """
-    model = pm.auto_arima(df[['numValue']],
-                                      start_p=1, start_q=1,
-                                      test='adf',
-                                      max_p=3, max_q=3, m=24, # 24 hour service
-                                      start_P=0, seasonal=True,
-                                      d=None, D=1,
-                                      trace=1,
-                                      error_action='ignore',
-                                      suppress_warnings=False,
-                                      stepwise=True)
 
-    return model
+    try:
+        model = pm.auto_arima(df[['numValue']],
+                                          start_p=1, start_q=1,
+                                          test='adf',
+                                          max_p=3, max_q=3, m=24, # 24 hour service
+                                          start_P=0, seasonal=True,
+                                          d=None, D=1,
+                                          trace=1,
+                                          error_action='ignore',
+                                          suppress_warnings=False,
+                                          stepwise=True)
+        return model
+    except Exception as e:
+        print(e)
+        return str(e)
 
 def __create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame=None):
     """
