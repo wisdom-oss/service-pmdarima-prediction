@@ -1,9 +1,9 @@
 /files/smartmeterdata
+/files/smartmeterdata/*
+files/trained_models
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
-
-/files/smartmeterdata/--pycache__
 
 *.py[cod]
 *$py.class
@@ -175,6 +175,4 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-
 /.idea
-/smartmeterdata
