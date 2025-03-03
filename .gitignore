@@ -1,6 +1,5 @@
-/files/smartmeterdata
 /files/smartmeterdata/*
-files/trained_models
+/files/trained_models/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
