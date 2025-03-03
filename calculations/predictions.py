@@ -30,37 +30,6 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str):
 
     return json_data
 
-def request_forecast(meter_name, timeframe: str, resolution: str):
-    """
-    main function to use when requesting a forecast by given data
-    :param meter_name: name of the selected meter
-    :param timeframe: number of rows
-    :param resolution: density of data points
-    :return: json_data to send to flask
-    """
-
-    # create a dataframe based on the provided parameters
-    df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution)
-
-    # train the model
-    model = __train_model(df)
-
-    # create prediction values (series, conf intervals) from trained model
-    # hand in number of periods and df of exogenous variables to predict
-    #pred_df = __create_forecast_data(model, 24)
-
-    pred_df = __create_forecast_data(model, 24, None)
-
-    # ADD date labels back HERE
-
-    # add bonus information back to dataframe
-    json_data = pred_df.to_dict(orient="list")
-    json_data["name"] = f"{meter_name}"
-    json_data["timeframe"] = f"{timeframe}"
-    json_data["resolution"] = f"{resolution}"
-
-    return json_data
-
 def __train_model(df: pd.DataFrame):
     """
     create a trained SARIMAX Model based on the dataframe provided
@@ -108,7 +77,9 @@ def __create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame=Non
     # create dataframe from separate series
     final_df = pd.DataFrame({"lower_conf_values": conf_intervals[:, 0], "numValue": predicted_values, "upper_conf_values":conf_intervals[:, 1]})
     final_df = final_df.reset_index()
-    final_df = final_df.rename(columns={"index":"dateObserved"})
+    # final_df = final_df.rename(columns={"index":"dateObserved"})
+
+    # ADD BACK dateObserved Data!
 
     return final_df
 

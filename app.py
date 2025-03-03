@@ -46,29 +46,6 @@ def single_smartmeter():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
-@app.route(prefix + "/predSingleSmartmeter", methods = ["POST"])
-def pred_single_smartmeter():
-    """
-    get data of a chosen smartmeter and chosen timely frame
-    :return: predicted values with conf_intervals
-    """
-    response = request.json
-
-    print("Start creating forecast!")
-
-    try:
-        data = pred.request_forecast(response["name"],
-                                            response["timeframe"],
-                                            response["resolution"]
-                                            )
-
-        identifier = response["name"] + "-" + response["timeframe"] + "-" + response["resolution"]
-        print("Creating forecast successfully for: " + identifier)
-        return jsonify(data)
-    except Exception as e:
-        print("Creating forecast failed for: " + identifier + ", because of \n str(e)")
-        return jsonify({"error": str(e)}), 400
-
 @app.route(prefix + "/trainModel", methods = ["POST"])
 def train_model_on_smartmeter():
     """
@@ -88,7 +65,6 @@ def train_model_on_smartmeter():
     except Exception as e:
         print("Creating model failed for: " + identifier + ", because of \n" + str(e))
         return jsonify({"error": str(e)}), 400
-
 
 @app.route(prefix + "/loadModelAndPredict", methods = ["POST"])
 def pred_from_model():
@@ -112,7 +88,6 @@ def pred_from_model():
     except Exception as e:
         print("Creating forecast failed for: " + identifier + ", because of \n str(e)")
         return jsonify({"error": str(e)}), 400
-
 
 
 if __name__ == "__main__":
