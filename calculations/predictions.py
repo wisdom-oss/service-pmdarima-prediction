@@ -6,29 +6,40 @@ import numpy as np
 import pmdarima as pm
 import matplotlib.pyplot as plt
 
-def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
-    # create a dataframe based on the provided parameters
-    df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution)
-
-    if not so.has_duplicates(meter_name, timeframe, resolution):
-        # train the model if identifier is unique
-        model = __train_model(df)
-        so.save_model_by_name(model, meter_name, timeframe, resolution)
-    else:
-        raise ValueError("model exists already!")
-
 def load_and_use_model(meter_name: str, timeframe: str, resolution: str):
-    model = so.load_model_by_name(meter_name, timeframe, resolution)
+    model_data = so.load_model_by_name(meter_name, timeframe, resolution)
 
-    pred_df = __create_forecast_data(model, 24, None)
+    pred_df = __create_forecast_data(model_data["model"], 24, None)
 
     # add bonus information back to dataframe
     json_data = pred_df.to_dict(orient="list")
     json_data["name"] = f"{meter_name}"
     json_data["timeframe"] = f"{timeframe}"
     json_data["resolution"] = f"{resolution}"
+    json_data["dateObserved"] = model_data["labels"]
 
     return json_data
+
+def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
+    # create a dataframe based on the provided parameters
+    df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution)
+
+    labels = __create_labels(df)
+
+    if not so.has_duplicates(meter_name, timeframe, resolution):
+        # train the model if identifier is unique
+        model = __train_model(df)
+
+        # save the model as well as used labels
+        model_data = {
+            "labels": labels,
+            "model": model
+
+        }
+
+        so.save_model_by_name(model_data, meter_name, timeframe, resolution)
+    else:
+        raise ValueError("model exists already!")
 
 def __train_model(df: pd.DataFrame):
     """
@@ -52,6 +63,29 @@ def __train_model(df: pd.DataFrame):
     except Exception as e:
         print(e)
         return str(e)
+
+def __create_labels(df: pd.DataFrame):
+
+    n_periods = 24
+
+    try:
+
+        df.dateObserved = pd.to_datetime(df.dateObserved)
+
+        # Generate future hourly timestamps
+        future_index = pd.date_range(
+            start=df.dateObserved.iloc[-1] + pd.Timedelta(hours=1),  # Start from the next hour
+            periods=n_periods,
+            freq='h'
+        )
+
+        future_index = future_index.strftime('%Y-%m-%d %H:%m:%s').tolist()
+
+        return future_index
+
+    except Exception as e:
+        print(e)
+        return None
 
 def __create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame=None):
     """
@@ -111,6 +145,30 @@ def __plot_forecast(df, fitted_series, lower_series, upper_series):
 
     plt.title("SARIMAX - Forecast of Smartmeter Data")
     plt.show()
+
+def __resolution_to_time_delta(resolution: str):
+    """
+    method to translate resolution into pandas
+    readable time delta formats
+    :param resolution: string to transform
+    :return: correct parameter
+    """
+    match resolution:
+        case "hourly":
+            return "hours", "h"
+        case "daily":
+            return "days", "D"
+        case "weekly":
+            return "weeks", "W"
+        case _:
+            raise ValueError
+
+    # Generate future hourly timestamps
+    future_index = pd.date_range(
+        start=start_date + start_delta,  # Start from the next hour
+        periods=n_periods,  # go for n (hours, days, weeks)
+        freq=frequency  # hours, days, weeks
+    )
 
 
 

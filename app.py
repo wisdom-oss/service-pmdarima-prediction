@@ -75,6 +75,7 @@ def pred_from_model():
     response = request.json
 
     print("Start creating forecast!")
+    identifier = response["name"] + "-" + response["timeframe"] + "-" + response["resolution"]
 
     try:
         data = pred.load_and_use_model(response["name"],
@@ -82,11 +83,10 @@ def pred_from_model():
                                             response["resolution"]
                                             )
 
-        identifier = response["name"] + "-" + response["timeframe"] + "-" + response["resolution"]
         print("Creating forecast successfully for: " + identifier)
         return jsonify(data)
     except Exception as e:
-        print("Creating forecast failed for: " + identifier + ", because of \n str(e)")
+        print(f"Creating forecast failed for: {identifier}, because of \n {str(e)}")
         return jsonify({"error": str(e)}), 400
 
 

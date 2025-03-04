@@ -50,7 +50,7 @@ def __create_path_to_file(name:  str, timeframe: str, resolution: str):
     root = f"{os.getenv("ROOT_DIR")}"
     folder_path = f"{os.getenv("FILE_PATH_TRAINED_MODELS")}"
 
-    identifier = f"{name}-{timeframe}-{resolution}-model.pkl"
+    identifier = f"{resolution}-{timeframe}-{name}-model.pkl"
 
     identifier = identifier.replace(":","-")
     identifier = identifier.replace(" ","-")

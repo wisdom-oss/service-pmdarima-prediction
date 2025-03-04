@@ -77,8 +77,6 @@ def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str):
     load_dotenv()
     start = pd.to_datetime(os.getenv("STARTING_DATE_SMARTMETER"))
     end = __calculate_end_date(start, timeframe)
-
-    # filter df by start and end
     df = __filter_df_by_endpoint(df, start, end)
 
     df = __reduce_data_points(df, resolution)
