@@ -24,9 +24,11 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
     # create a dataframe based on the provided parameters
     df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution)
 
-    labels = __create_labels(df)
-
     if not so.has_duplicates(meter_name, timeframe, resolution):
+
+        # create date labels for the prediction models
+        labels = __create_labels(df)
+
         # train the model if identifier is unique
         model = __train_model(df)
 
@@ -34,7 +36,6 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
         model_data = {
             "labels": labels,
             "model": model
-
         }
 
         so.save_model_by_name(model_data, meter_name, timeframe, resolution)
@@ -62,21 +63,22 @@ def __train_model(df: pd.DataFrame):
         return model
     except Exception as e:
         print(e)
-        return str(e)
 
-def __create_labels(df: pd.DataFrame):
+def __create_labels(df: pd.DataFrame, resolution: str = "hourly"):
 
     n_periods = 24
 
     try:
 
         df.dateObserved = pd.to_datetime(df.dateObserved)
+        time_unit, frequency = __adjust_resolution_to_datarange(resolution)
+        time_value = 1
 
         # Generate future hourly timestamps
         future_index = pd.date_range(
-            start=df.dateObserved.iloc[-1] + pd.Timedelta(hours=1),  # Start from the next hour
+            start=df.dateObserved.iloc[-1] + pd.Timedelta(**{time_unit: time_value}),  # Start from the next hour
             periods=n_periods,
-            freq='h'
+            freq=frequency
         )
 
         future_index = future_index.strftime('%Y-%m-%d %H:%m:%s').tolist()
@@ -146,12 +148,12 @@ def __plot_forecast(df, fitted_series, lower_series, upper_series):
     plt.title("SARIMAX - Forecast of Smartmeter Data")
     plt.show()
 
-def __resolution_to_time_delta(resolution: str):
+def __adjust_resolution_to_datarange(resolution: str):
     """
-    method to translate resolution into pandas
-    readable time delta formats
-    :param resolution: string to transform
-    :return: correct parameter
+    changes the parameter of resolution to adjust to the
+    name convention of the data range method of pandas
+    :param resolution: requested resolution
+    :return: new string
     """
     match resolution:
         case "hourly":
@@ -161,14 +163,8 @@ def __resolution_to_time_delta(resolution: str):
         case "weekly":
             return "weeks", "W"
         case _:
-            raise ValueError
+            return None
 
-    # Generate future hourly timestamps
-    future_index = pd.date_range(
-        start=start_date + start_delta,  # Start from the next hour
-        periods=n_periods,  # go for n (hours, days, weeks)
-        freq=frequency  # hours, days, weeks
-    )
 
 
 
