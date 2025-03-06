@@ -4,22 +4,24 @@ import os
 
 def save_model_by_name(model, name:  str, timeframe: str, resolution: str):
     """
-    method to save a created model to a pickle file, based on the parameters provided
-    :param model: trained model object
-    :param name: name of the smartmeter
+    saves a trained arima model to a pickle file
+    :param model: trained model
+    :param name: name of smartmeter
     :param timeframe: amount of days
-    :param resolution: timely resolution
-    :return: print
+    :param resolution: resolution of labels
+    :return: success or error message
     """
     path = __create_path_to_file(name, timeframe, resolution)
 
     try:
         # Pickle it
         joblib.dump(model, path, compress=3)
+        data = f"Model successfully saved to {path}"
     except Exception as e:
-        print(e)
+        data = f"An error occurred while saving to {path}: {e}"
     finally:
-       print("Model successfully saved")
+        print(data)
+        return data
 
 def load_model_by_name(name:  str, timeframe: str, resolution: str):
     """
@@ -33,9 +35,12 @@ def load_model_by_name(name:  str, timeframe: str, resolution: str):
 
     try:
         # Load the model up, create predictions
-        return joblib.load(path)
+        data = joblib.load(path)
     except Exception as e:
-        print(f"Loading Model failed, because of: {e}")
+        data = f"Loading Model in {path} failed, because of: {e}"
+        print(data)
+    finally:
+        return data
 
 def __create_path_to_file(name:  str, timeframe: str, resolution: str):
     """
@@ -65,9 +70,9 @@ def has_duplicates(name:  str, timeframe: str, resolution: str):
     :param resolution: timely resolution
     :return: True if duplicate, False else
     """
-    path = __create_path_to_file(name, timeframe, resolution)
+    full_path = __create_path_to_file(name, timeframe, resolution)
 
-    if os.path.exists(path):
-        return True;
+    if os.path.exists(full_path):
+        return True
     else:
         return False

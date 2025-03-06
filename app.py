@@ -2,8 +2,7 @@ import os
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from files import json_reader
-from calculations import predictions as pred
+from operations import requests as req
 from dotenv import load_dotenv
 
 app = Flask(__name__)
@@ -20,13 +19,12 @@ def hello_world():
 def meterInformation():
 
     try:
-        return jsonify(json_reader.read_meter_information())
+        return jsonify(req.read_meter_information())
 
     except Exception as e:
         print(e)
         # status code decided how angular understands response
         return jsonify({"error": str(e)}), 400
-
 
 @app.route(prefix + "/singleSmartmeter", methods = ["POST"])
 def single_smartmeter():
@@ -37,7 +35,7 @@ def single_smartmeter():
     response = request.json
 
     try:
-        data = json_reader.extract_single_smartmeter(response["name"],
+        data = req.extract_single_smartmeter(response["name"],
                                             response["timeframe"],
                                             response["resolution"]
                                             )
@@ -52,17 +50,16 @@ def train_model_on_smartmeter():
     :return: predicted values with conf_intervals
     """
     response = request.json
-    identifier = response["name"] + "-" + response["timeframe"] + "-" + response["resolution"]
-
     print("Start training model!")
+    identifier = f"{response["name"]}-{response["timeframe"]}-{response["resolution"]}"
 
     try:
-        pred.train_and_save_model(response["name"], response["timeframe"], response["resolution"])
-        data = "Creating model successfully for: " + identifier
-        print("Creating model successfully for: " + identifier)
+        data = req.train_and_save_model(response["name"],
+                                        response["timeframe"],
+                                        response["resolution"])
         return jsonify(data)
     except Exception as e:
-        print("Creating model failed for: " + identifier + ", because of \n" + str(e))
+        print(f"Creating forecast failed for: {identifier}, because of {str(e)}")
         return jsonify({"error": str(e)}), 400
 
 @app.route(prefix + "/loadModelAndPredict", methods = ["POST"])
@@ -71,23 +68,16 @@ def pred_from_model():
     get data of a chosen smartmeter and chosen timely frame
     :return: predicted values with conf_intervals
     """
-    response = request.json
-
     print("Start creating forecast!")
-    identifier = response["name"] + "-" + response["timeframe"] + "-" + response["resolution"]
 
     try:
-        data = pred.load_and_use_model(response["name"],
-                                            response["timeframe"],
-                                            response["resolution"]
-                                            )
+        data = req.load_and_use_model(request.json["name"],
+                                      request.json["timeframe"],
+                                      request.json["resolution"])
 
-        print("Creating forecast successfully for: " + identifier)
         return jsonify(data)
     except Exception as e:
-        print(f"Creating forecast failed for: {identifier}, because of \n {str(e)}")
         return jsonify({"error": str(e)}), 400
-
 
 if __name__ == "__main__":
     app.run(port=8080, debug=True, use_reloader=False)
