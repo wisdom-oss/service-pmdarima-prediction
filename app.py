@@ -20,7 +20,7 @@ def hello_world():
 def meterInformation():
 
     try:
-        return jsonify(st.read_meter_information())
+        return jsonify(json_reader.read_meter_information())
 
     except Exception as e:
         print(e)
