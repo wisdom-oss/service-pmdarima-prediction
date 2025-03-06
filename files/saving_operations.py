@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import joblib
 import os
-import re
 
 def save_model_by_name(model, name:  str, timeframe: str, resolution: str):
     """
@@ -52,8 +51,7 @@ def __create_path_to_file(name:  str, timeframe: str, resolution: str):
 
     identifier = f"{resolution}-{timeframe}-{name}-model.pkl"
 
-    identifier = identifier.replace(":","-")
-    identifier = identifier.replace(" ","-")
+    identifier = identifier.replace(":","_")
 
     full_path = os.path.join(root, folder_path, identifier)
 

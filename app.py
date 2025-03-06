@@ -2,8 +2,7 @@ import os
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-
-from files import json_reader as st
+from files import json_reader
 from calculations import predictions as pred
 from dotenv import load_dotenv
 
@@ -38,7 +37,7 @@ def single_smartmeter():
     response = request.json
 
     try:
-        data = st.extract_single_smartmeter(response["name"],
+        data = json_reader.extract_single_smartmeter(response["name"],
                                             response["timeframe"],
                                             response["resolution"]
                                             )

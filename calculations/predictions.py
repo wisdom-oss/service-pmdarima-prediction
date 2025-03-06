@@ -81,7 +81,7 @@ def __create_labels(df: pd.DataFrame, resolution: str = "hourly"):
             freq=frequency
         )
 
-        future_index = future_index.strftime('%Y-%m-%d %H:%m:%s').tolist()
+        future_index = future_index.strftime('%Y.%m.%d %H:%m:%s').tolist()
 
         return future_index
 

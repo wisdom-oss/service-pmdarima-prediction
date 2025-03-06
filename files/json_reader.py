@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 from dateutil.relativedelta import relativedelta
-from flask import jsonify
 from dotenv import load_dotenv
 
 
