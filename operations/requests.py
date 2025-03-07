@@ -53,6 +53,7 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str):
     json_data["timeframe"] = f"{timeframe}"
     json_data["resolution"] = f"{resolution}"
     json_data["dateObserved"] = model_data["labels"]
+    json_data["realValue"] = model_data["realValue"]
 
     return json_data
 
@@ -66,10 +67,10 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
         labels = pred.create_labels(df)
 
         # save the real data belonging to the prediction
-        #data = json_reader.create_df_from_labels(labels, meter_name, resolution)
+        data = json_reader.create_df_from_labels(labels, meter_name, resolution)
 
-        # change datatype to save memory
-        df.numValue = df.numValue.astype("float32")
+        load_dotenv()
+        labels = labels.strftime(os.getenv("DATETIME_STANDARD_FORMAT")).tolist()
 
         # train the model if identifier is unique
         model = pred.train_model(df)
@@ -77,7 +78,8 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
         # save the model as well as used labels
         model_data = {
             "labels": labels,
-            "model": model
+            "model": model,
+            "realValue": data
         }
 
         return so.save_model_by_name(model_data, meter_name, timeframe, resolution)

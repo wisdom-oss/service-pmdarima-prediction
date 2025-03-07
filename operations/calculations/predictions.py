@@ -48,21 +48,26 @@ def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
 
     try:
 
-        df.dateObserved = pd.to_datetime(df.dateObserved)
-        time_unit, frequency = adjust_resolution_to_datarange(resolution)
-        time_value = 1
+        match resolution:
+            case "hourly":
+                time_unit, frequency = "hours", "h"
+            case "daily":
+                time_unit, frequency = "days", "D"
+            case "weekly":
+                time_unit, frequency = "weeks", "W"
+            case _:
+                time_unit, frequency = None
 
+
+        df.dateObserved = pd.to_datetime(df.dateObserved)
         # Generate future hourly timestamps
         future_index = pd.date_range(
-            start=df.dateObserved.iloc[-1] + pd.Timedelta(**{time_unit: time_value}),  # Start from the next hour
+            start=df.dateObserved.iloc[-1] + pd.Timedelta(**{time_unit: 1}),  # Start from the next hour
             periods=n_periods,
             freq=frequency
         )
 
-        load_dotenv()
-        final_index = future_index.strftime(os.getenv("DATETIME_STANDARD_FORMAT")).tolist()
-
-        return final_index
+        return future_index
 
     except Exception as e:
         print(e)
@@ -93,7 +98,6 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame = Non
     # create dataframe from separate series
     final_df = pd.DataFrame({"lower_conf_values": conf_intervals[:, 0], "numValue": predicted_values,
                              "upper_conf_values": conf_intervals[:, 1]})
-    final_df = final_df.reset_index()
 
     return final_df
 
@@ -128,23 +132,6 @@ def plot_forecast(df, fitted_series, lower_series, upper_series):
     plt.title("SARIMAX - Forecast of Smartmeter Data")
     plt.show()
 
-
-def adjust_resolution_to_datarange(resolution: str):
-    """
-    changes the parameter of resolution to adjust to the
-    name convention of the data range method of pandas
-    :param resolution: requested resolution
-    :return: new string
-    """
-    match resolution:
-        case "hourly":
-            return "hours", "h"
-        case "daily":
-            return "days", "D"
-        case "weekly":
-            return "weeks", "W"
-        case _:
-            return None
 
 
 

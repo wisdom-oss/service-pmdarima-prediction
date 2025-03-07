@@ -4,6 +4,34 @@ from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from root_file import ROOT_DIR
 
+def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str):
+    """
+    extract single smartmeter data
+    :param resolution: resolution of the requested data: hourly, daily, weekly
+    :param meter_name: name of smartmeter
+    :param timeframe: timely frame how many rows are being extracted
+    :return: json resp of meter_name and extracted values + dates
+    """
+
+    # read in whole file
+    df = read_smartmeter_data(False)
+
+    # filter every meter not being named
+    df = df.drop(df[df.refDevice != meter_name].index)
+
+    # filter out unnecessary columns
+    df = df[["dateObserved", "numValue"]]
+
+    # create start date and end date
+    start, end = __gain_start_end_date(timeframe)
+
+    # filter df by start and end
+    df = __filter_df_by_dates(df, start, end)
+
+    # reduce data points when necessary
+    df = __reduce_data_points(df, resolution)
+
+    return df
 
 def read_smartmeter_data(metaCheck: bool):
     """
@@ -23,39 +51,13 @@ def read_smartmeter_data(metaCheck: bool):
     df = pd.read_json(path)
     return df
 
-def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str):
-    """
-    extract single smartmeter data
-    :param resolution: resolution of the requested data: hourly, daily, weekly
-    :param meter_name: name of smartmeter
-    :param timeframe: timely frame how many rows are being extracted
-    :return: json resp of meter_name and extracted values + dates
-    """
-
-    df = read_smartmeter_data(False)
-
-    # filter every meter not being named
-    df = df.drop(df[df.refDevice != meter_name].index)
-
-    df = df[["dateObserved", "numValue"]]
-
-    # extract start point of data and calculate end point
-    load_dotenv()
-    start = pd.to_datetime(os.getenv("STARTING_DATE_SMARTMETER"))
-    end = __calculate_end_date(start, timeframe)
-
-    df = __filter_df_by_endpoint(df, start, end)
-    df = __reduce_data_points(df, resolution)
-
-    return df
-
 def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str):
     """
-    extract single smartmeter data
-    :param resolution: resolution of the requested data: hourly, daily, weekly
-    :param meter_name: name of smartmeter
-    :param timeframe: timely frame how many rows are being extracted
-    :return: json resp of meter_name and extracted values + dates
+    create real values of provided date labels
+    :param labels: datetimes to filter
+    :param meter_name: name of provided smartmeter
+    :param resolution: timely resolution
+    :return: df of numerical real measured values
     """
 
     df = read_smartmeter_data(False)
@@ -65,21 +67,28 @@ def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str
 
     df = df[["dateObserved", "numValue"]]
 
-    start = labels[0]
-    end = labels[-1]
-
-    df = __filter_df_by_endpoint(df, start, end)
+    df = __filter_df_by_dates(df, labels[0], labels[-1])
     df = __reduce_data_points(df, resolution)
 
-    return df
+    df = df[["numValue"]]
+    df.rename(columns={"numValue": "realValue"}, inplace=True)
 
-def __calculate_end_date(start_point, timeframe):
+    # change datatype to save memory
+    df["realValue"] = df["realValue"].astype("float32")
+
+    return df["realValue"].tolist()
+
+def __gain_start_end_date(timeframe):
     """
     private function to map the timeframe to an end date
     :param start_point: the date to start searching
     :param timeframe: the time frame to search for (1 week, 1 month..)
     :return: the end date of the corresponding timeframe
     """
+
+    # extract start point of data and calculate end point
+    load_dotenv()
+    start_point = pd.to_datetime(os.getenv("STARTING_DATE_SMARTMETER"))
 
     match timeframe:
         case "one day":
@@ -94,25 +103,23 @@ def __calculate_end_date(start_point, timeframe):
             end = start_point + relativedelta(months=6)
         case "one year":
             # BUGGED -> OutOfBounds
-            end = start_point + relativedelta(years=1)
+            end = start_point + relativedelta(months=12)
         case "all":
-            pass
+            # CAUTION WHEN HAVING MORE DATA THAN 5 years!
+            end = start_point + relativedelta(months=60)
 
-    return end
+    return start_point, end
 
-def __filter_df_by_endpoint(df, start, end: str):
-    # extract start_point and convert to timestamp
-    df.dateObserved = pd.to_datetime(df.dateObserved)
-    start = pd.to_datetime(start)
-    end = pd.to_datetime(end)
+def __filter_df_by_dates(df: pd.DataFrame, start_date: str, end_date: str):
+    # Ensure 'dateObserved' is in datetime format
+    df['dateObserved'] = pd.to_datetime(df['dateObserved'], errors='coerce')
 
-    if end:
-        if end != start:
-            filtered_df = df[(df["dateObserved"] >= start) & (df["dateObserved"] < end)]
-        else:
-            filtered_df = df
-    else:
-        filtered_df = df
+    # Convert start and end dates to datetime
+    start_date = pd.to_datetime(start_date, errors='coerce')
+    end_date = pd.to_datetime(end_date, errors='coerce')
+
+    # Filter DataFrame
+    filtered_df = df[(df['dateObserved'] >= start_date) & (df['dateObserved'] <= end_date)]
 
     return filtered_df
 
@@ -136,4 +143,6 @@ def __reduce_data_points(df, resolution: str):
     avg = avg.reset_index()
 
     return avg
+
+
 
