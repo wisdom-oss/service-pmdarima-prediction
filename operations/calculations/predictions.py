@@ -2,6 +2,9 @@ import pandas as pd
 import numpy as np
 import pmdarima as pm
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+import os
+
 
 def train_model(df: pd.DataFrame):
     """
@@ -12,21 +15,21 @@ def train_model(df: pd.DataFrame):
 
     try:
         model = pm.auto_arima(df[['numValue']],
-                                          start_p=1, start_q=1,
-                                          test='adf',
-                                          max_p=3, max_q=3, m=24, # 24 hour service
-                                          start_P=0, seasonal=True,
-                                          d=None, D=1,
-                                          trace=1,
-                                          error_action='ignore',
-                                          suppress_warnings=False,
-                                          stepwise=True)
+                              start_p=1, start_q=1,
+                              test='adf',
+                              max_p=3, max_q=3, m=24,  # 24 hour service
+                              start_P=0, seasonal=True,
+                              d=None, D=1,
+                              trace=1,
+                              error_action='ignore',
+                              suppress_warnings=False,
+                              stepwise=True)
         return model
     except Exception as e:
         print(e)
 
-def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
 
+def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
     n_periods = 24
 
     try:
@@ -42,15 +45,18 @@ def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
             freq=frequency
         )
 
-        future_index = future_index.strftime('%Y.%m.%d %H:%m:%s').tolist()
+        load_dotenv()
+        test = os.getenv("DATETIME_STANDARD_FORMAT")
+        final_index = future_index.strftime(test).tolist()
 
-        return future_index
+        return final_index
 
     except Exception as e:
         print(e)
         return None
 
-def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame=None):
+
+def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame = None):
     """
     using the sarimax model forecast data is being predicted
     :param exogenous_df: df containing all exogene variables to add to the prediction
@@ -68,17 +74,16 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame=None)
     predicted_values, conf_intervals = sarimax_model.predict(
         n_periods=n_periods,
         return_conf_int=True,
-        exogenous=exogenous_df # add exogenous variables when ready
+        exogenous=exogenous_df  # add exogenous variables when ready
     )
 
     # create dataframe from separate series
-    final_df = pd.DataFrame({"lower_conf_values": conf_intervals[:, 0], "numValue": predicted_values, "upper_conf_values":conf_intervals[:, 1]})
+    final_df = pd.DataFrame({"lower_conf_values": conf_intervals[:, 0], "numValue": predicted_values,
+                             "upper_conf_values": conf_intervals[:, 1]})
     final_df = final_df.reset_index()
-    # final_df = final_df.rename(columns={"index":"dateObserved"})
-
-    # ADD BACK dateObserved Data!
 
     return final_df
+
 
 def create_exogenous_variables(prediction_indexes):
     df = pd.DataFrame()
@@ -96,6 +101,7 @@ def create_exogenous_variables(prediction_indexes):
 
     return future_exog
 
+
 def plot_forecast(df, fitted_series, lower_series, upper_series):
     # Plot
     plt.figure(figsize=(15, 7))
@@ -108,6 +114,7 @@ def plot_forecast(df, fitted_series, lower_series, upper_series):
 
     plt.title("SARIMAX - Forecast of Smartmeter Data")
     plt.show()
+
 
 def adjust_resolution_to_datarange(resolution: str):
     """
@@ -125,7 +132,3 @@ def adjust_resolution_to_datarange(resolution: str):
             return "weeks", "W"
         case _:
             return None
-
-
-
-

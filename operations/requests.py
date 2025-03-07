@@ -1,5 +1,4 @@
 from operations.calculations import json_reader, predictions as pred, save_load as so
-
 from dotenv import load_dotenv
 import os
 
@@ -64,6 +63,9 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
 
         # create date labels for the prediction models
         labels = pred.create_labels(df)
+
+        # save the real data belonging to the prediction
+        #data = json_reader.create_df_from_labels(labels, meter_name, resolution)
 
         # train the model if identifier is unique
         model = pred.train_model(df)

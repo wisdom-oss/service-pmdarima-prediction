@@ -49,6 +49,30 @@ def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str):
 
     return df
 
+def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str):
+    """
+    extract single smartmeter data
+    :param resolution: resolution of the requested data: hourly, daily, weekly
+    :param meter_name: name of smartmeter
+    :param timeframe: timely frame how many rows are being extracted
+    :return: json resp of meter_name and extracted values + dates
+    """
+
+    df = read_smartmeter_data(False)
+
+    # filter every meter not being named
+    df = df.drop(df[df.refDevice != meter_name].index)
+
+    df = df[["dateObserved", "numValue"]]
+
+    start = labels[0]
+    end = labels[-1]
+
+    df = __filter_df_by_endpoint(df, start, end)
+    df = __reduce_data_points(df, resolution)
+
+    return df
+
 def __calculate_end_date(start_point, timeframe):
     """
     private function to map the timeframe to an end date
@@ -77,9 +101,10 @@ def __calculate_end_date(start_point, timeframe):
     return end
 
 def __filter_df_by_endpoint(df, start, end: str):
-
     # extract start_point and convert to timestamp
-    df["dateObserved"] = pd.to_datetime(df["dateObserved"])
+    df.dateObserved = pd.to_datetime(df.dateObserved)
+    start = pd.to_datetime(start)
+    end = pd.to_datetime(end)
 
     if end != start:
         filtered_df = df[(df["dateObserved"] >= start) & (df["dateObserved"] < end)]
