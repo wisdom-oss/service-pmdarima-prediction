@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import joblib
 import os
+from root_file import ROOT_DIR
 
 def save_model_by_name(model, name:  str, timeframe: str, resolution: str):
     """
@@ -50,15 +51,13 @@ def __create_path_to_file(name:  str, timeframe: str, resolution: str):
     :param resolution: timely resolution
     :return: full name + path to folder
     """
-    load_dotenv()
-    root = f"{os.getenv("ROOT_DIR")}"
-    folder_path = f"{os.getenv("FILE_PATH_TRAINED_MODELS")}"
 
     identifier = f"{resolution}-{timeframe}-{name}-model.pkl"
-
     identifier = identifier.replace(":","_")
 
-    full_path = os.path.join(root, folder_path, identifier)
+    load_dotenv()
+    folder_path = f"{os.getenv("FILE_PATH_TRAINED_MODELS")}"
+    full_path = os.path.join(ROOT_DIR, folder_path, identifier)
 
     return full_path
 

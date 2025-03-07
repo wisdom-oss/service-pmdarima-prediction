@@ -4,8 +4,22 @@ import pmdarima as pm
 import matplotlib.pyplot as plt
 from dotenv import load_dotenv
 import os
+import time
 
+def time_it(func):
+    """
+    decorator function (@time_it) to measure execution time
+    :param func: function to be provided (not necessary)
+    :return: print the execution time
+    """
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"Execution time: {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+        return result
+    return wrapper
 
+@time_it
 def train_model(df: pd.DataFrame):
     """
     create a trained SARIMAX Model based on the dataframe provided
@@ -22,11 +36,11 @@ def train_model(df: pd.DataFrame):
                               d=None, D=1,
                               trace=1,
                               error_action='ignore',
-                              suppress_warnings=False,
+                              suppress_warnings=True,
                               stepwise=True)
         return model
     except Exception as e:
-        print(e)
+        raise ValueError(e)
 
 
 def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
@@ -46,8 +60,7 @@ def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
         )
 
         load_dotenv()
-        test = os.getenv("DATETIME_STANDARD_FORMAT")
-        final_index = future_index.strftime(test).tolist()
+        final_index = future_index.strftime(os.getenv("DATETIME_STANDARD_FORMAT")).tolist()
 
         return final_index
 
@@ -132,3 +145,7 @@ def adjust_resolution_to_datarange(resolution: str):
             return "weeks", "W"
         case _:
             return None
+
+
+
+

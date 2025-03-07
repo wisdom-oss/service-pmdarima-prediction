@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
+from root_file import ROOT_DIR
 
 
 def read_smartmeter_data(metaCheck: bool):
@@ -11,8 +12,7 @@ def read_smartmeter_data(metaCheck: bool):
     :return: df containing data
     """
 
-    load_dotenv()
-    abs_path = os.path.join(os.getenv("ROOT_DIR"),
+    abs_path = os.path.join(ROOT_DIR,
                             os.getenv("FILE_PATH_EXAMPLE_DATA"))
 
     if metaCheck:
@@ -106,8 +106,11 @@ def __filter_df_by_endpoint(df, start, end: str):
     start = pd.to_datetime(start)
     end = pd.to_datetime(end)
 
-    if end != start:
-        filtered_df = df[(df["dateObserved"] >= start) & (df["dateObserved"] < end)]
+    if end:
+        if end != start:
+            filtered_df = df[(df["dateObserved"] >= start) & (df["dateObserved"] < end)]
+        else:
+            filtered_df = df
     else:
         filtered_df = df
 
@@ -133,3 +136,4 @@ def __reduce_data_points(df, resolution: str):
     avg = avg.reset_index()
 
     return avg
+

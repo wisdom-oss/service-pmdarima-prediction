@@ -2,6 +2,7 @@ from operations.calculations import json_reader, predictions as pred, save_load 
 from dotenv import load_dotenv
 import os
 
+
 def read_meter_information():
     """
     read in meta data of meter information to display the different smartmeter timeseries
@@ -66,6 +67,9 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
 
         # save the real data belonging to the prediction
         #data = json_reader.create_df_from_labels(labels, meter_name, resolution)
+
+        # change datatype to save memory
+        df.numValue = df.numValue.astype("float32")
 
         # train the model if identifier is unique
         model = pred.train_model(df)
