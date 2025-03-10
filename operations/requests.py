@@ -22,7 +22,7 @@ def read_meter_information():
 
     return short_handles
 
-def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
+def extract_single_smartmeter(meter_name, timeframe: str, resolution: str, startpoint: str):
     """
     extracts data from a single smartmeter and transforms it into json data
     :param meter_name: name of meter
@@ -31,7 +31,7 @@ def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
     :return: the created df
     """
 
-    df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution)
+    df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution, startpoint)
 
     json_data = df.to_dict(orient="list")
 
@@ -41,9 +41,9 @@ def extract_single_smartmeter(meter_name, timeframe: str, resolution: str):
 
     return json_data
 
-def load_and_use_model(meter_name: str, timeframe: str, resolution: str):
+def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpoint: str):
 
-    model_data = so.load_model_by_name(meter_name, timeframe, resolution)
+    model_data = so.load_model_by_name(meter_name, timeframe, resolution, startpoint)
 
     pred_df = pred.create_forecast_data(model_data["model"], 24, None)
 
@@ -57,9 +57,9 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str):
 
     return json_data
 
-def train_and_save_model(meter_name: str, timeframe: str, resolution: str):
+def train_and_save_model(meter_name: str, timeframe: str, resolution: str, startpoint: str):
     # create a dataframe based on the provided parameters
-    df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution)
+    df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution, startpoint)
 
     if not so.has_duplicates(meter_name, timeframe, resolution):
 

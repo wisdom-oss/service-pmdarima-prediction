@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from root_file import ROOT_DIR
 
-def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str):
+def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str, startpoint: str):
     """
     extract single smartmeter data
     :param resolution: resolution of the requested data: hourly, daily, weekly
@@ -23,7 +23,7 @@ def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str):
     df = df[["dateObserved", "numValue"]]
 
     # create start date and end date
-    start, end = __gain_start_end_date(timeframe)
+    start, end = __gain_start_end_date(timeframe, startpoint)
 
     # filter df by start and end
     df = __filter_df_by_dates(df, start, end)
@@ -78,7 +78,7 @@ def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str
 
     return df["realValue"].tolist()
 
-def __gain_start_end_date(timeframe):
+def __gain_start_end_date(timeframe: str, startpoint: str):
     """
     private function to map the timeframe to an end date
     :param start_point: the date to start searching
@@ -88,7 +88,10 @@ def __gain_start_end_date(timeframe):
 
     # extract start point of data and calculate end point
     load_dotenv()
-    start_point = pd.to_datetime(os.getenv("STARTING_DATE_SMARTMETER"))
+    if startpoint:
+        start_point = pd.to_datetime(startpoint)
+    else:
+        start_point = pd.to_datetime(os.getenv("STARTING_DATE_SMARTMETER"))
 
     match timeframe:
         case "one day":

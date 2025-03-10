@@ -29,12 +29,12 @@ def single_smartmeter():
     get data of a chosen smartmeter and chosen timely frame
     :return: amount of smartmeter data
     """
-    response = request.json
 
     try:
-        data = req.extract_single_smartmeter(response["name"],
-                                             response["timeframe"],
-                                             response["resolution"]
+        data = req.extract_single_smartmeter(request.json["name"],
+                                             request.json["timeframe"],
+                                             request.json["resolution"],
+                                             request.json["startpoint"]
                                              )
         return jsonify(data)
     except Exception as e:
@@ -47,17 +47,16 @@ def train_model_on_smartmeter():
     get data of a chosen smartmeter and chosen timely frame
     :return: predicted values with conf_intervals
     """
-    response = request.json
     print("Start training model!")
-    identifier = f"{response["name"]}-{response["timeframe"]}-{response["resolution"]}"
 
     try:
-        data = req.train_and_save_model(response["name"],
-                                        response["timeframe"],
-                                        response["resolution"])
+        data = req.train_and_save_model(request.json["name"],
+                                        request.json["timeframe"],
+                                        request.json["resolution"],
+                                        request.json["startpoint"]
+                                        )
         return jsonify(data)
     except Exception as e:
-        print(f"Creating forecast failed for: {identifier}, because of {str(e)}")
         return jsonify({"error": str(e)}), 400
 
 
@@ -72,7 +71,9 @@ def pred_from_model():
     try:
         data = req.load_and_use_model(request.json["name"],
                                       request.json["timeframe"],
-                                      request.json["resolution"])
+                                      request.json["resolution"],
+                                      request.json["startpoint"]
+                                      )
 
         return jsonify(data)
     except Exception as e:
