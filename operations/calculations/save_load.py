@@ -3,7 +3,7 @@ import joblib
 import os
 from root_file import ROOT_DIR
 
-def save_model_by_name(model, name:  str, timeframe: str, resolution: str):
+def save_model_by_name(model, name:  str, timeframe: str, resolution: str, startpoint: str):
     """
     saves a trained arima model to a pickle file
     :param model: trained model
@@ -12,7 +12,7 @@ def save_model_by_name(model, name:  str, timeframe: str, resolution: str):
     :param resolution: resolution of labels
     :return: success or error message
     """
-    path = __create_path_to_file(name, timeframe, resolution)
+    path = __create_path_to_file(name, timeframe, resolution, startpoint)
 
     try:
         # Pickle it

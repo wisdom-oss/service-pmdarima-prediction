@@ -61,7 +61,7 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str, start
     # create a dataframe based on the provided parameters
     df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution, startpoint)
 
-    if not so.has_duplicates(meter_name, timeframe, resolution):
+    if not so.has_duplicates(meter_name, timeframe, resolution, startpoint):
 
         # create date labels for the prediction models
         labels = pred.create_labels(df)
@@ -82,7 +82,7 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str, start
             "realValue": data
         }
 
-        return so.save_model_by_name(model_data, meter_name, timeframe, resolution)
+        return so.save_model_by_name(model_data, meter_name, timeframe, resolution, startpoint)
     else:
         raise ValueError("model exists already!")
 
