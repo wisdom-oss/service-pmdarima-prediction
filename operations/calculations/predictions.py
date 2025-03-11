@@ -28,19 +28,28 @@ def train_model(df: pd.DataFrame):
     """
 
     try:
+        # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
+        # But 12 yields better results?
         model = pm.auto_arima(df[['numValue']],
                               start_p=1, start_q=1,
                               test='adf',
-                              max_p=3, max_q=3, m=24,  # 24 hour service
+                              max_p=3, max_q=3, m=24,
                               start_P=0, seasonal=True,
-                              d=None, D=1,
+                              d=1, D=1, # d =None so No Integrating was done
                               trace=1,
-                              error_action='ignore',
+                              error_action='ignore', #default: ignore
                               suppress_warnings=True,
                               stepwise=True)
         return model
     except Exception as e:
+        print(e)
         raise ValueError(e)
+
+    print_summary(model)
+
+
+def print_summary(model):
+    return model.summary()
 
 
 def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
@@ -74,7 +83,7 @@ def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
         return None
 
 
-def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame = None):
+def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
     """
     using the sarimax model forecast data is being predicted
     :param exogenous_df: df containing all exogene variables to add to the prediction

@@ -1,4 +1,4 @@
-from operations.calculations import json_reader, predictions as pred, save_load as so
+from operations.calculations import json_reader, predictions as pred, save_load as so, weather
 from dotenv import load_dotenv
 import os
 
@@ -45,7 +45,10 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpo
 
     model_data = so.load_model_by_name(meter_name, timeframe, resolution, startpoint)
 
-    pred_df = pred.create_forecast_data(model_data["model"], 24, None)
+    # create weather data to accompany predictions
+    df_weather = weather.request_weather(model_data["labels"])
+
+    pred_df = pred.create_forecast_data(model_data["model"], 24, df_weather)
 
     # add bonus information back to dataframe
     json_data = pred_df.to_dict(orient="list")

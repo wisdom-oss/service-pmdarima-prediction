@@ -38,6 +38,7 @@ def single_smartmeter():
                                              )
         return jsonify(data)
     except Exception as e:
+        print(f"error: {e}")
         return jsonify({"error": str(e)}), 400
 
 
@@ -57,6 +58,7 @@ def train_model_on_smartmeter():
                                         )
         return jsonify(data)
     except Exception as e:
+        print(f"error: {e}")
         return jsonify({"error": str(e)}), 400
 
 
@@ -77,6 +79,7 @@ def pred_from_model():
 
         return jsonify(data)
     except Exception as e:
+        print(f"error: {e}")
         return jsonify({"error": str(e)}), 400
 
 

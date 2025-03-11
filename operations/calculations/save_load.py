@@ -69,9 +69,16 @@ def has_duplicates(name:  str, timeframe: str, resolution: str, startpoint: str)
     :param resolution: timely resolution
     :return: True if duplicate, False else
     """
-    full_path = __create_path_to_file(name, timeframe, resolution, startpoint)
 
-    if os.path.exists(full_path):
-        return True
+    load_dotenv()
+    allow = os.getenv("ALLOW_DUPLICATE_MODELS")
+
+    # only perform duplicate check if env variable is False
+    if not allow:
+        full_path = __create_path_to_file(name, timeframe, resolution, startpoint)
+        if os.path.exists(full_path):
+            return True
+        else:
+            return False
     else:
         return False
