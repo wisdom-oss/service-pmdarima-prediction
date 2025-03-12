@@ -2,9 +2,8 @@ import pandas as pd
 import numpy as np
 import pmdarima as pm
 import matplotlib.pyplot as plt
-from dotenv import load_dotenv
-import os
 import time
+from operations.calculations import weather
 
 def time_it(func):
     """
@@ -19,8 +18,21 @@ def time_it(func):
         return result
     return wrapper
 
+def train_model(exogenous: bool, df: pd.DataFrame):
+    """
+    train a model based on a flag with or without exogenous variables
+    :param exogenous: true if exogenous variables are used
+    :param df: dataframe
+    :return: trained model
+    """
+
+    if exogenous:
+        return train_exogenous_model(df)
+    elif not exogenous:
+        return train_plain_model(df)
+
 @time_it
-def train_model(df: pd.DataFrame):
+def train_plain_model(df: pd.DataFrame):
     """
     create a trained SARIMAX Model based on the dataframe provided
     :param df: df provided based on selected smartmeter data
@@ -30,26 +42,57 @@ def train_model(df: pd.DataFrame):
     try:
         # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
         # But 12 yields better results?
-        model = pm.auto_arima(df[['numValue']],
+        model = pm.auto_arima(df['numValue'],
                               start_p=1, start_q=1,
                               test='adf',
                               max_p=3, max_q=3, m=24,
                               start_P=0, seasonal=True,
-                              d=1, D=1, # d =None so No Integrating was done
+                              d=0, D=1, # d =None so No Integrating was done
                               trace=1,
                               error_action='ignore', #default: ignore
-                              suppress_warnings=True,
+                              suppress_warnings=False,
                               stepwise=True)
+
+        print(model.summary())
+
         return model
     except Exception as e:
         print(e)
         raise ValueError(e)
 
-    print_summary(model)
 
+@time_it
+def train_exogenous_model(df: pd.DataFrame):
+    """
+    create a trained SARIMAX Model based on the dataframe provided
+    :param df: df provided based on selected smartmeter data
+    :return: trained SARIMAX model
+    """
 
-def print_summary(model):
-    return model.summary()
+    df["dateObserved"] = df["dateObserved"].dt.strftime('%d.%m.%y %H:%M')
+
+    df_temperature = weather.request_weather_info(df["dateObserved"].tolist())
+
+    try:
+        # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
+        # But 12 yields better results?
+        model = pm.auto_arima(df['numValue'], df_temperature,
+                              start_p=1, start_q=1,
+                              test='adf',
+                              max_p=3, max_q=3, m=24,
+                              start_P=0, seasonal=True,
+                              d=0, D=1, # d =None so No Integrating was done
+                              trace=1,
+                              error_action='ignore', #default: ignore
+                              suppress_warnings=False,
+                              stepwise=True)
+
+        print(model.summary())
+
+        return model
+    except Exception as e:
+        print(e)
+        raise ValueError(e)
 
 
 def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
@@ -97,12 +140,17 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
     # Generate a dataframe of all exogenous variable to use while predicting data
     #future_exog = create_exogenous_variables_for_prediction(future_index)
 
-    # Make predictions with confidence intervals
-    predicted_values, conf_intervals = sarimax_model.predict(
-        n_periods=n_periods,
-        return_conf_int=True,
-        exogenous=exogenous_df  # add exogenous variables when ready
-    )
+    try:
+
+        # Make predictions with confidence intervals
+        predicted_values, conf_intervals = sarimax_model.predict(
+            n_periods=n_periods,
+            X=exogenous_df,  # add exogenous variables when ready
+            return_conf_int=True, # return confidence intervalls
+            alpha=0.01 # confidence intervall of 95%
+        )
+    except Exception as e:
+        print(e)
 
     # create dataframe from separate series
     final_df = pd.DataFrame({"lower_conf_values": conf_intervals[:, 0], "numValue": predicted_values,

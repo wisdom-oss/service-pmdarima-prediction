@@ -3,7 +3,7 @@ import joblib
 import os
 from root_file import ROOT_DIR
 
-def save_model_by_name(model, name:  str, timeframe: str, resolution: str, startpoint: str):
+def save_model_by_name(model, name:  str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
     """
     saves a trained arima model to a pickle file
     :param model: trained model
@@ -12,7 +12,7 @@ def save_model_by_name(model, name:  str, timeframe: str, resolution: str, start
     :param resolution: resolution of labels
     :return: success or error message
     """
-    path = __create_path_to_file(name, timeframe, resolution, startpoint)
+    path = __create_path_to_file(name, timeframe, resolution, startpoint, exogen)
 
     try:
         # Pickle it
@@ -24,7 +24,7 @@ def save_model_by_name(model, name:  str, timeframe: str, resolution: str, start
         print(data)
         return data
 
-def load_model_by_name(name:  str, timeframe: str, resolution: str,startpoint: str):
+def load_model_by_name(name:  str, timeframe: str, resolution: str,startpoint: str, exogen: bool):
     """
     method to save a created model to a pickle file, based on the parameters provided
     :param name: name of the smartmeter
@@ -32,7 +32,7 @@ def load_model_by_name(name:  str, timeframe: str, resolution: str,startpoint: s
     :param resolution: timely resolution
     :return: loaded model
     """
-    path = __create_path_to_file(name, timeframe, resolution, startpoint)
+    path = __create_path_to_file(name, timeframe, resolution, startpoint, exogen)
 
     try:
         # Load the model up, create predictions
@@ -43,7 +43,7 @@ def load_model_by_name(name:  str, timeframe: str, resolution: str,startpoint: s
     finally:
         return data
 
-def __create_path_to_file(name:  str, timeframe: str, resolution: str, startpoint: str):
+def __create_path_to_file(name:  str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
     """
     helper function to create a unique name and keep it consistent throughout the project
     :param name: smartmeter name
@@ -52,7 +52,11 @@ def __create_path_to_file(name:  str, timeframe: str, resolution: str, startpoin
     :return: full name + path to folder
     """
 
-    identifier = f"{resolution}-{timeframe}-{name}-{startpoint}-model.pkl"
+    if exogen:
+        identifier = f"{resolution}-{timeframe}-{name}-{startpoint}-exogen.pkl"
+    else:
+        identifier = f"{resolution}-{timeframe}-{name}-{startpoint}-plain.pkl"
+
     identifier = identifier.replace(":","_")
 
     load_dotenv()
@@ -64,6 +68,7 @@ def __create_path_to_file(name:  str, timeframe: str, resolution: str, startpoin
 def has_duplicates(name:  str, timeframe: str, resolution: str, startpoint: str):
     """
     create a temp name and check if model already exists
+    :param startpoint:
     :param name: smartmeter
     :param timeframe: duration of days
     :param resolution: timely resolution

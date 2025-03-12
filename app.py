@@ -54,7 +54,8 @@ def train_model_on_smartmeter():
         data = req.train_and_save_model(request.json["name"],
                                         request.json["timeframe"],
                                         request.json["resolution"],
-                                        request.json["startpoint"]
+                                        request.json["startpoint"],
+                                        request.json["useWeather"]
                                         )
         return jsonify(data)
     except Exception as e:
@@ -74,7 +75,8 @@ def pred_from_model():
         data = req.load_and_use_model(request.json["name"],
                                       request.json["timeframe"],
                                       request.json["resolution"],
-                                      request.json["startpoint"]
+                                      request.json["startpoint"],
+                                      request.json["useWeather"]
                                       )
 
         return jsonify(data)

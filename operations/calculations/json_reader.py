@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pandas as pd
 import os
 from dateutil.relativedelta import relativedelta
@@ -110,6 +112,10 @@ def __gain_start_end_date(timeframe: str, startpoint: str):
         case "all":
             # CAUTION WHEN HAVING MORE DATA THAN 5 years!
             end = start_point + relativedelta(months=60)
+
+    # reduce end by 1 microsecond in order to invalidate the last entry,
+    # so there are exactly 168 (observations + startpoint)
+    end = end - timedelta(microseconds=1)
 
     return start_point, end
 

@@ -41,12 +41,12 @@ def extract_single_smartmeter(meter_name, timeframe: str, resolution: str, start
 
     return json_data
 
-def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpoint: str):
+def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
 
-    model_data = so.load_model_by_name(meter_name, timeframe, resolution, startpoint)
+    model_data = so.load_model_by_name(meter_name, timeframe, resolution, startpoint, exogen)
 
     # create weather data to accompany predictions
-    df_weather = weather.request_weather(model_data["labels"])
+    df_weather = weather.request_weather_info(model_data["labels"])
 
     pred_df = pred.create_forecast_data(model_data["model"], 24, df_weather)
 
@@ -60,7 +60,7 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpo
 
     return json_data
 
-def train_and_save_model(meter_name: str, timeframe: str, resolution: str, startpoint: str):
+def train_and_save_model(meter_name: str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
     # create a dataframe based on the provided parameters
     df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution, startpoint)
 
@@ -75,8 +75,8 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str, start
         load_dotenv()
         labels = labels.strftime(os.getenv("DATETIME_STANDARD_FORMAT")).tolist()
 
-        # train the model if identifier is unique
-        model = pred.train_model(df)
+        # train the model based on exogenous bool
+        model = pred.train_model(exogen, df)
 
         # save the model as well as used labels
         model_data = {
@@ -85,7 +85,7 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str, start
             "realValue": data
         }
 
-        return so.save_model_by_name(model_data, meter_name, timeframe, resolution, startpoint)
+        return so.save_model_by_name(model_data, meter_name, timeframe, resolution, startpoint, exogen)
     else:
         raise ValueError("model exists already!")
 
