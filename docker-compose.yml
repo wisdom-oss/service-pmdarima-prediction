@@ -1,7 +1,8 @@
 services:
-  flask-app:
-    image: water-demand-prediction:0.5
+  water-demand-prediction_name:
+    image: image_water-demand-prediction:0.6
     build: .
+    container_name: service-water-demand-prediction
     ports:
       - "8080:8080"
     networks:
