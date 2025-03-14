@@ -50,7 +50,7 @@ def train_plain_model(df: pd.DataFrame):
                               d=0, D=1, # d =None so No Integrating was done
                               trace=1,
                               error_action='ignore', #default: ignore
-                              suppress_warnings=False,
+                              suppress_warnings=True,
                               stepwise=True)
 
         print(model.summary())
@@ -84,7 +84,7 @@ def train_exogenous_model(df: pd.DataFrame):
                               d=0, D=1, # d =None so No Integrating was done
                               trace=1,
                               error_action='ignore', #default: ignore
-                              suppress_warnings=False,
+                              suppress_warnings=True,
                               stepwise=True)
 
         print(model.summary())
