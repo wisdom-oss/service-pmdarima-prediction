@@ -1,4 +1,7 @@
-/files
+# Files
+/files/smartmeterdata/*
+/files/backup_models/*
+/files/trained_models/*
 /.idea
 
 # Byte-compiled / optimized / DLL files
