@@ -1,6 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from operations import requests as req
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 CORS(app)
@@ -29,6 +32,8 @@ def single_smartmeter():
     get data of a chosen smartmeter and chosen timely frame
     :return: amount of smartmeter data
     """
+
+    logging.debug("This is an Info")
 
     try:
         data = req.extract_single_smartmeter(request.json["name"],
