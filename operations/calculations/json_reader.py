@@ -107,15 +107,15 @@ def __gain_start_end_date(timeframe: str, startpoint: str):
         case "six months":
             end = start_point + relativedelta(months=6)
         case "one year":
-            # BUGGED -> OutOfBounds
             end = start_point + relativedelta(months=12)
         case "all":
             # CAUTION WHEN HAVING MORE DATA THAN 5 years!
             end = start_point + relativedelta(months=60)
 
-    # reduce end by 1 microsecond in order to invalidate the last entry,
+    # reduce end by 1 minute, because unix doesnt recognize lower timechanges
+    # in order to invalidate the last entry,
     # so there are exactly 168 (observations + startpoint)
-    end = end - timedelta(microseconds=1)
+    end = end - timedelta(minutes=1)
 
     return start_point, end
 
