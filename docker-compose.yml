@@ -1,14 +1,20 @@
 services:
   water-demand-prediction_name:
-    image: image_water-demand-prediction:0.6
+    image: water_demand_prediction:0.7
     build: .
-    container_name: service-water-demand-prediction
-    volumes: 
+    container_name: training_water_demand_prediction
+    volumes:
+      # Bind Data from outside the container to the container
       - "/home/jstueven/files:/service-water-demand-prediction/files/smartmeterdata"
+
+      # Mount a volume to access trained models after container deletion
+      - models_volume:/service-water-demand-prediction/files/trained_models
     ports:
       - "8090:8080"
     networks:
       - flask-network
+volumes:
+  models_volume: #Done?
 networks:
   flask-network:
     driver: bridge
