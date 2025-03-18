@@ -1,6 +1,7 @@
 from operations.calculations import json_reader, predictions as pred, save_load as so, weather
 from dotenv import load_dotenv
 import os
+import logging
 
 
 def read_meter_information():
@@ -43,20 +44,26 @@ def extract_single_smartmeter(meter_name, timeframe: str, resolution: str, start
 
 def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
 
-    model_data = so.load_model_by_name(meter_name, timeframe, resolution, startpoint, exogen)
 
-    # create weather data to accompany predictions
-    df_weather = weather.request_weather_info(model_data["labels"])
+    try:
+        model_data = so.load_model_by_name(meter_name, timeframe, resolution, startpoint, exogen)
+    
 
-    pred_df = pred.create_forecast_data(model_data["model"], 24, df_weather)
+        # create weather data to accompany predictions
+        df_weather = weather.request_weather_info(model_data["labels"])
 
-    # add bonus information back to dataframe
-    json_data = pred_df.to_dict(orient="list")
-    json_data["name"] = f"{meter_name}"
-    json_data["timeframe"] = f"{timeframe}"
-    json_data["resolution"] = f"{resolution}"
-    json_data["dateObserved"] = model_data["labels"]
-    json_data["realValue"] = model_data["realValue"]
+        pred_df = pred.create_forecast_data(model_data["model"], 24, df_weather)
+
+        # add bonus information back to dataframe
+        json_data = pred_df.to_dict(orient="list")
+        json_data["name"] = f"{meter_name}"
+        json_data["timeframe"] = f"{timeframe}"
+        json_data["resolution"] = f"{resolution}"
+        json_data["dateObserved"] = model_data["labels"]
+        json_data["realValue"] = model_data["realValue"]
+
+    except Exception as e:
+        print(f"mistake here, because {e}")
 
     return json_data
 

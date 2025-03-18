@@ -150,7 +150,7 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
             alpha=0.01 # confidence intervall of 95%
         )
     except Exception as e:
-        print(e)
+        print(f" prediction {e}")
 
     # create dataframe from separate series
     final_df = pd.DataFrame({"lower_conf_values": conf_intervals[:, 0], "numValue": predicted_values,

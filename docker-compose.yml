@@ -3,6 +3,8 @@ services:
     image: image_water-demand-prediction:0.6
     build: .
     container_name: service-water-demand-prediction
+    volumes: 
+      - "/home/jstueven/files:/service-water-demand-prediction/files/smartmeterdata"
     ports:
       - "8090:8080"
     networks:

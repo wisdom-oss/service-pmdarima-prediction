@@ -5,6 +5,8 @@ import os
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from root_file import ROOT_DIR
+import logging
+
 
 def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str, startpoint: str):
     """
@@ -27,6 +29,8 @@ def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str, start
     # create start date and end date
     start, end = __gain_start_end_date(timeframe, startpoint)
 
+    logging.debug(f"{start} and {end}")
+
     # filter df by start and end
     df = __filter_df_by_dates(df, start, end)
 
@@ -45,12 +49,15 @@ def read_smartmeter_data(metaCheck: bool):
     abs_path = os.path.join(ROOT_DIR,
                             os.getenv("FILE_PATH_EXAMPLE_DATA"))
 
+
     if metaCheck:
         path = os.path.join(abs_path, os.getenv("EXAMPLE_META_DATA"))
     else:
         path = os.path.join(abs_path, os.getenv("EXAMPLE_DATA"))
 
     df = pd.read_json(path)
+
+    logging.debug(df.head())
     return df
 
 def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str):
