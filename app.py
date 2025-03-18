@@ -3,12 +3,12 @@ from flask_cors import CORS
 from operations import requests as req
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
-
 app = Flask(__name__)
 CORS(app)
 
 prefix = "/waterdemand"
+logging.basicConfig(level=logging.DEBUG)
+
 
 @app.route(f"{prefix}/helloworld", methods=["GET"])
 def hello_world():
@@ -21,9 +21,9 @@ def meterInformation():
         return jsonify(req.read_meter_information())
 
     except Exception as e:
-        print(e)
+        logging.debug(e)
         # status code decided how angular understands response
-        return jsonify({"error": str(e)}), 400
+        return jsonify({"error in /meterInformation": str(e)}), 400
 
 
 @app.route(f"{prefix}/singleSmartmeter", methods=["POST"])
@@ -33,8 +33,6 @@ def single_smartmeter():
     :return: amount of smartmeter data
     """
 
-    logging.debug("This is an Info")
-
     try:
         data = req.extract_single_smartmeter(request.json["name"],
                                              request.json["timeframe"],
@@ -43,8 +41,8 @@ def single_smartmeter():
                                              )
         return jsonify(data)
     except Exception as e:
-        print(f"error: {e}")
-        return jsonify({"error": str(e)}), 400
+        logging.debug(f"error in /singleSmartmeter: {e}")
+        return jsonify({"error in /singleSmartmeter": str(e)}), 400
 
 
 @app.route(f"{prefix}/trainModel", methods=["POST"])
@@ -64,8 +62,8 @@ def train_model_on_smartmeter():
                                         )
         return jsonify(data)
     except Exception as e:
-        print(f"error: {e}")
-        return jsonify({"error": str(e)}), 400
+        logging.debug(f"error in /trainModel: {e}")
+        return jsonify({"error in /trainModel": str(e)}), 400
 
 
 @app.route(f"{prefix}/loadModelAndPredict", methods=["POST"])
@@ -86,8 +84,8 @@ def pred_from_model():
 
         return jsonify(data)
     except Exception as e:
-        print(f"error: {e}")
-        return jsonify({"error": str(e)}), 400
+        logging.debug(f"error in /loadModelAndPredict: {e}")
+        return jsonify({"error in /loadModelAndPredict": str(e)}), 400
 
 
 if __name__ == "__main__":

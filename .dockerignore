@@ -3,6 +3,13 @@
 /files/backup_models/*
 /files/trained_models/*
 
+# Virtual environment
+.env
+.venv/
+venv/
+
+/.idea
+
 
 # Git
 .git
@@ -74,11 +81,6 @@ docs/_build/
 
 # PyBuilder
 target/
-
-# Virtual environment
-.env
-.venv/
-venv/
 
 # PyCharm
 .idea

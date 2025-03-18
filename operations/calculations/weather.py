@@ -1,20 +1,23 @@
-from datetime import datetime
-import pytz
 import requests
 from pandas import json_normalize, to_datetime
 from datetime import datetime, timedelta
 import pandas as pd
+import logging
 
-def request_weather_info(labels: list):
-
-    start, end = convert_timestamps(labels[0], labels[-1])
+def request_weather_info(labels: list) -> pd.DataFrame:
+    start, end = __convert_timestamps(labels[0], labels[-1])
 
     #capability, column_name = "air_temperature", "TT_TU"
     capability, column_name = "precipitation", "R1"
 
-    response = requests.get(
-        f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
-    )
+    try:
+        response = requests.get(
+            f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
+        )
+
+    except Exception as e:
+        error_type = type(e).__name__
+        logging.debug(f"Request to Weather-API failed. \n {error_type}: {e}")
 
     data = response.json()
 
@@ -28,11 +31,11 @@ def request_weather_info(labels: list):
     return df[[column_name]]
 
 
-def convert_timestamps(start, end):
-    # Check if the inputs are datetime objects or strings
+def __convert_timestamps(start, end) -> tuple[int, int]:
+
     if not isinstance(start, datetime) and not isinstance(end, datetime):
-        format_string = "%d.%m.%y %H:%M"  # Adjusted for your timestamp format
-        # Parse the input datetime strings into naive datetime objects
+        format_string = "%d.%m.%y %H:%M"
+
         datetime_start = datetime.strptime(start, format_string)
         datetime_end = datetime.strptime(end, format_string)
     else:
@@ -46,9 +49,9 @@ def convert_timestamps(start, end):
     return unix_start, unix_end
 
 
-def adjust_timestamp_column(df, column_name):
-    # Convert the timestamp column to datetime, ensuring the format is correctly interpreted 2021-10-27T22:00:00Z
-
+def adjust_timestamp_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    # Convert the timestamp column to datetime,
+    # ensuring the format is correctly interpreted 2021-10-27T22:00:00Z
     df[column_name] = to_datetime(df[column_name], format="%Y-%m-%dT%H:%M:%SZ")
 
     # Adjust by 2 hours
@@ -60,34 +63,37 @@ def adjust_timestamp_column(df, column_name):
     return df
 
 
-def fill_missing_timestamps(df):
+def fill_missing_timestamps(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Fills missing timestamps in the DataFrame, because DWD sucks, by creating a continuous range of hourly timestamps
-    and merging it with the existing data, filling missing rows with NaN.
-
-    :param df: DataFrame with a 'timestamp' column that contains the datetime values.
-    :return: A DataFrame with missing timestamps filled with NaN values.
+    creates a new date range for the df in order to check up on missing timestamps
+    :param df: the original df with requested weather data
+    :return: the full content df with no missing timestamps
     """
 
-    # Ensure the 'timestamp' column is in datetime format
-    df['timestamp'] = pd.to_datetime(df['ts'], format='%d.%m.%y %H:%M')
+    try:
+        # Ensure the 'timestamp' column is in datetime format
+        df['timestamp'] = pd.to_datetime(df['ts'], format='%d.%m.%y %H:%M')
 
-    # Create a date range from the first to the last timestamp in the DataFrame
-    start_timestamp = df['timestamp'].min()
-    end_timestamp = df['timestamp'].max()
-    all_timestamps = pd.date_range(start=start_timestamp, end=end_timestamp, freq='H')
+        # Create a date range from the first to the last timestamp in the DataFrame
+        start_timestamp = df['timestamp'].min()
+        end_timestamp = df['timestamp'].max()
+        all_timestamps = pd.date_range(start=start_timestamp, end=end_timestamp, freq='h')
 
-    # Create a DataFrame with the complete range of timestamps
-    all_timestamps_df = pd.DataFrame(all_timestamps, columns=['timestamp'])
+        # Create a DataFrame with the complete range of timestamps
+        all_timestamps_df = pd.DataFrame(all_timestamps, columns=['timestamp'])
 
-    # Merge the new date range with the original DataFrame
-    df_filled = pd.merge(all_timestamps_df, df, on='timestamp', how='left')
+        # Merge the new date range with the original DataFrame
+        df_filled = pd.merge(all_timestamps_df, df, on='timestamp', how='left')
 
-    # Backfill missing values (NaN)
-    df_filled = df_filled.fillna(method='bfill')
+        # Backfill missing values (NaN)
+        df_filled = df_filled.bfill()
 
-    # replaces every -999 as a statement for missing value with a 0 to not hinder prediction
-    df_filled['R1'] = df_filled['R1'].replace(-999, 0)
+        # replaces every -999 as a statement for missing value with a 0 to not hinder prediction
+        df_filled['R1'] = df_filled['R1'].replace(-999, 0)
+
+    except Exception as e:
+        error_type = type(e).__name__
+        logging.debug(f"adding missing timestamps to weather data failed. \n {error_type}: {e}")
 
     # Fill missing values with NaN (this is already handled by 'how=left')
     return df_filled

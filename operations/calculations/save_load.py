@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import joblib
 import os
 from root_file import ROOT_DIR
+import logging
 
 def save_model_by_name(model, name:  str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
     """
@@ -21,7 +22,7 @@ def save_model_by_name(model, name:  str, timeframe: str, resolution: str, start
     except Exception as e:
         data = f"An error occurred while saving to {path}: {e}"
     finally:
-        print(data)
+        logging.debug(data)
         return data
 
 def load_model_by_name(name:  str, timeframe: str, resolution: str,startpoint: str, exogen: bool):
@@ -38,8 +39,9 @@ def load_model_by_name(name:  str, timeframe: str, resolution: str,startpoint: s
         # Load the model up, create predictions
         data = joblib.load(path)
     except Exception as e:
-        data = f"Loading Model in {path} failed, because of: {e}"
-        print(data)
+        error_type = type(e).__name__
+        data = f"Loading Model in {path} failed. \n {error_type}: {e}"
+        logging.debug(data)
     finally:
         return data
 

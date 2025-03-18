@@ -3,6 +3,10 @@ import numpy as np
 import pmdarima as pm
 import matplotlib.pyplot as plt
 import time
+import logging
+
+from pandas import DatetimeIndex
+
 from operations.calculations import weather
 
 def time_it(func):
@@ -14,11 +18,11 @@ def time_it(func):
     def wrapper(*args, **kwargs):
         start = time.time()
         result = func(*args, **kwargs)
-        print(f"Execution time: {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
+        logging.debug(f"Execution time: {time.strftime('%H:%M:%S', time.gmtime(time.time() - start))}")
         return result
     return wrapper
 
-def train_model(exogenous: bool, df: pd.DataFrame):
+def train_model(exogenous: bool, df: pd.DataFrame) -> pd.DataFrame:
     """
     train a model based on a flag with or without exogenous variables
     :param exogenous: true if exogenous variables are used
@@ -53,12 +57,12 @@ def train_plain_model(df: pd.DataFrame):
                               suppress_warnings=True,
                               stepwise=True)
 
-        print(model.summary())
+        logging.debug(model.summary())
 
         return model
     except Exception as e:
-        print(e)
-        raise ValueError(e)
+        error_type = type(e).__name__
+        logging.debug(f"Training Arima Model failed. \n {error_type}: {e}")
 
 
 @time_it
@@ -87,19 +91,18 @@ def train_exogenous_model(df: pd.DataFrame):
                               suppress_warnings=True,
                               stepwise=True)
 
-        print(model.summary())
+        logging.debug(model.summary())
 
         return model
     except Exception as e:
-        print(e)
-        raise ValueError(e)
+        error_type = type(e).__name__
+        logging.debug(f"Training Arima Model failed. \n {error_type}: {e}")
 
 
-def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
+def create_labels(df: pd.DataFrame, resolution: str = "hourly") -> pd.DataFrame:
     n_periods = 24
 
     try:
-
         match resolution:
             case "hourly":
                 time_unit, frequency = "hours", "h"
@@ -119,11 +122,11 @@ def create_labels(df: pd.DataFrame, resolution: str = "hourly"):
             freq=frequency
         )
 
-        return future_index
-
+        df = pd.DataFrame(future_index, columns=['Date'])
+        return df
     except Exception as e:
-        print(e)
-        return None
+        error_type = type(e).__name__
+        logging.debug(f"Creating Labels for predicted values failed. \n {error_type}: {e}")
 
 
 def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
@@ -147,10 +150,11 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
             n_periods=n_periods,
             X=exogenous_df,  # add exogenous variables when ready
             return_conf_int=True, # return confidence intervalls
-            alpha=0.01 # confidence intervall of 95%
+            alpha=0.01 # confidence intervall of standard 95%
         )
     except Exception as e:
-        print(f" prediction {e}")
+        error_type = type(e).__name__
+        logging.debug(f"Predicting values failed. \n {error_type}: {e}")
 
     # create dataframe from separate series
     final_df = pd.DataFrame({"lower_conf_values": conf_intervals[:, 0], "numValue": predicted_values,

@@ -5,10 +5,9 @@ import os
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from root_file import ROOT_DIR
-import logging
 
 
-def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str, startpoint: str):
+def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str, startpoint: str) -> pd.DataFrame:
     """
     extract single smartmeter data
     :param resolution: resolution of the requested data: hourly, daily, weekly
@@ -29,8 +28,6 @@ def create_df_from_smartmeter(meter_name, timeframe: str, resolution: str, start
     # create start date and end date
     start, end = __gain_start_end_date(timeframe, startpoint)
 
-    logging.debug(f"{start} and {end}")
-
     # filter df by start and end
     df = __filter_df_by_dates(df, start, end)
 
@@ -48,8 +45,6 @@ def read_smartmeter_data(metaCheck: bool):
 
     abs_path = os.path.join(ROOT_DIR,
                             os.getenv("FILE_PATH_EXAMPLE_DATA"))
-
-
     if metaCheck:
         path = os.path.join(abs_path, os.getenv("EXAMPLE_META_DATA"))
     else:
@@ -57,10 +52,9 @@ def read_smartmeter_data(metaCheck: bool):
 
     df = pd.read_json(path)
 
-    logging.debug(df.head())
     return df
 
-def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str):
+def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str) -> list:
     """
     create real values of provided date labels
     :param labels: datetimes to filter
@@ -76,7 +70,7 @@ def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str
 
     df = df[["dateObserved", "numValue"]]
 
-    df = __filter_df_by_dates(df, labels[0], labels[-1])
+    df = __filter_df_by_dates(df, labels["Date"].iloc[0], labels["Date"].iloc[-1])
     df = __reduce_data_points(df, resolution)
 
     df = df[["numValue"]]
@@ -87,7 +81,7 @@ def create_df_from_labels(labels: pd.DataFrame, meter_name: str, resolution: str
 
     return df["realValue"].tolist()
 
-def __gain_start_end_date(timeframe: str, startpoint: str):
+def __gain_start_end_date(timeframe: str, startpoint: str) -> [str, str]:
     """
     private function to map the timeframe to an end date
     :param start_point: the date to start searching
@@ -95,12 +89,13 @@ def __gain_start_end_date(timeframe: str, startpoint: str):
     :return: the end date of the corresponding timeframe
     """
 
-    # extract start point of data and calculate end point
     load_dotenv()
     if startpoint:
         start_point = pd.to_datetime(startpoint)
     else:
         start_point = pd.to_datetime(os.getenv("STARTING_DATE_SMARTMETER"))
+
+    end = 0
 
     match timeframe:
         case "one day":
@@ -124,13 +119,11 @@ def __gain_start_end_date(timeframe: str, startpoint: str):
     # so there are exactly 168 (observations + startpoint)
     end = end - timedelta(minutes=1)
 
-    return start_point, end
+    return str(start_point), str(end)
 
-def __filter_df_by_dates(df: pd.DataFrame, start_date: str, end_date: str):
+def __filter_df_by_dates(df: pd.DataFrame, start_date, end_date) -> pd.DataFrame:
     # Ensure 'dateObserved' is in datetime format
     df['dateObserved'] = pd.to_datetime(df['dateObserved'], errors='coerce')
-
-    # Convert start and end dates to datetime
     start_date = pd.to_datetime(start_date, errors='coerce')
     end_date = pd.to_datetime(end_date, errors='coerce')
 
@@ -139,7 +132,7 @@ def __filter_df_by_dates(df: pd.DataFrame, start_date: str, end_date: str):
 
     return filtered_df
 
-def __reduce_data_points(df, resolution: str):
+def __reduce_data_points(df, resolution: str) -> pd.DataFrame:
     # set date index
     df = df.set_index("dateObserved")
 
