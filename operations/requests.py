@@ -1,4 +1,4 @@
-from operations.calculations import json_reader, predictions as pred, save_load as so, weather
+from operations.calculations import json_reader, predictions as pred, save_load as so, weather, analysis
 from dotenv import load_dotenv
 import os
 import warnings
@@ -64,6 +64,8 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpo
     json_data["resolution"] = f"{resolution}"
     json_data["dateObserved"] = model_data["labels"]
     json_data["realValue"] = model_data["realValue"]
+
+    analysis.analyze_prediction(model_data["realValue"], pred_df["numValue"])
 
     return json_data
 
