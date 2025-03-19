@@ -57,6 +57,10 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpo
 
     pred_df = pred.create_forecast_data(model_data["model"], 24, df_weather)
 
+    # add the analysis results to the request
+    analysis_df = analysis.analyze_prediction(model_data["realValue"], pred_df["numValue"])
+
+
     # add bonus information back to dataframe
     json_data = pred_df.to_dict(orient="list")
     json_data["name"] = f"{meter_name}"
@@ -64,8 +68,11 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpo
     json_data["resolution"] = f"{resolution}"
     json_data["dateObserved"] = model_data["labels"]
     json_data["realValue"] = model_data["realValue"]
+    json_data["MAE"] = analysis_df["MAE"]
+    json_data["MSE"] = analysis_df["MSE"]
+    json_data["RMSE"] = analysis_df["RMSE"]
+    json_data["R2"] = analysis_df["R2"]
 
-    analysis.analyze_prediction(model_data["realValue"], pred_df["numValue"])
 
     return json_data
 
