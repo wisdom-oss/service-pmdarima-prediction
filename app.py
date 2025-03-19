@@ -1,14 +1,22 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from operations import requests as req
-import logging
+import logging, sys
 
 app = Flask(__name__)
 CORS(app)
 
 prefix = "/waterdemand"
-logging.basicConfig(level=logging.DEBUG)
 
+# Set up logging to capture both console output (stdout) and log file
+logging.basicConfig(
+    level=logging.DEBUG,  # Capture all log levels from DEBUG and higher
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),  # Log output will appear in the console (stdout)
+        # logging.FileHandler("arima_model.log", mode='a')  # Save logs to arima_model.log file
+    ]
+)
 
 @app.route(f"{prefix}/helloworld", methods=["GET"])
 def hello_world():
