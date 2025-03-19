@@ -59,7 +59,6 @@ def train_model_on_smartmeter():
     get data of a chosen smartmeter and chosen timely frame
     :return: predicted values with conf_intervals
     """
-    print("Start training model!")
 
     try:
         data = req.train_and_save_model(request.json["name"],

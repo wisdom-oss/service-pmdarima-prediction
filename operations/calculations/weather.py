@@ -15,6 +15,8 @@ def request_weather_info(labels: list) -> pd.DataFrame:
             f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
         )
 
+        logging.debug("successfully requested weather info")
+
     except Exception as e:
         error_type = type(e).__name__
         logging.debug(f"Request to Weather-API failed. \n {error_type}: {e}")
@@ -27,6 +29,8 @@ def request_weather_info(labels: list) -> pd.DataFrame:
     df = adjust_timestamp_column(df, "ts")
 
     df = fill_missing_timestamps(df)
+
+    logging.debug(f"{df.head()}")
 
     return df[[column_name]]
 

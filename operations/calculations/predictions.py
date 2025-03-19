@@ -73,13 +73,14 @@ def train_exogenous_model(df: pd.DataFrame):
     df["dateObserved"] = df["dateObserved"].dt.strftime('%d.%m.%y %H:%M')
 
     df_temperature = weather.request_weather_info(df["dateObserved"].tolist())
-    logging.debug(f"DF for weather_data: \n {df_temperature.head()}")
+
 
     try:
         # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
         # But 12 yields better results?
 
         logging.debug(f"start training the model")
+        logging.debug(f"DF for weather_data: \n {df_temperature.head()}")
 
         model = pm.auto_arima(df['numValue'], df_temperature,
                               start_p=1, start_q=1,
