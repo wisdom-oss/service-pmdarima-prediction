@@ -1,5 +1,5 @@
 services:
-  water-demand-prediction_name:
+  train_water_demand_prediction:
     image: wdp_training:0.7
     logging:
       driver: "json-file"
