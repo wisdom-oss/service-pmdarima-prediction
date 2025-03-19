@@ -4,9 +4,6 @@ import pmdarima as pm
 import matplotlib.pyplot as plt
 import time
 import logging
-
-from pandas import DatetimeIndex
-
 from operations.calculations import weather
 
 def time_it(func):
@@ -76,6 +73,7 @@ def train_exogenous_model(df: pd.DataFrame):
     df["dateObserved"] = df["dateObserved"].dt.strftime('%d.%m.%y %H:%M')
 
     df_temperature = weather.request_weather_info(df["dateObserved"].tolist())
+    logging.debug(f"DF for weather_data: \n {df_temperature.head()}")
 
     try:
         # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).

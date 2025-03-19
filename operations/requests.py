@@ -2,6 +2,7 @@ from operations.calculations import json_reader, predictions as pred, save_load 
 from dotenv import load_dotenv
 import os
 import warnings
+import logging
 
 # filter all future warnings we don't use.
 warnings.filterwarnings('ignore', category=FutureWarning, message="'force_all_finite' was renamed to 'ensure_all_finite'")
@@ -69,14 +70,17 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpo
 def train_and_save_model(meter_name: str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
     # create a dataframe based on the provided parameters
     df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution, startpoint)
+    logging.debug(f"DF read from smartmeter: \n {df.head()}")
 
     if not so.has_duplicates(meter_name, timeframe, resolution, startpoint):
 
         # create date labels for the prediction models
         labels = pred.create_labels(df)
+        logging.debug(f"Labels created for training: \n {labels.head()}")
 
         # save the real data belonging to the prediction
         data = json_reader.create_df_from_labels(labels, meter_name, resolution)
+        logging.debug(f"Real Value for prediction timeframe: \n {data[0]}")
 
         load_dotenv()
         labels = labels["Date"].dt.strftime(os.getenv("DATETIME_STANDARD_FORMAT")).tolist()
