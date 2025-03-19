@@ -30,7 +30,7 @@ def request_weather_info(labels: list) -> pd.DataFrame:
 
     df = fill_missing_timestamps(df)
 
-    logging.debug(f"{df.head()}")
+    logging.debug(f"{df.head()} \n {df.info()}")
 
     return df[[column_name]]
 
