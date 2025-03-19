@@ -16,6 +16,6 @@ def analyze_prediction(real_values, forecast_values):
                   f"RMSE: {rmse} \n"
                   f"R2 score: {r2} \n")
 
-    df = pd.DataFrame(data=[mae,mse,rmse,r2], columns=["MAE", "MSE", "RMSE", "R2"])
+    df = pd.DataFrame(data=[[mae, mse, rmse, r2]], columns=["MAE", "MSE", "RMSE", "R2"])
 
     return df
