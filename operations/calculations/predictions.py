@@ -74,13 +74,17 @@ def train_exogenous_model(df: pd.DataFrame):
 
     df_temperature = weather.request_weather_info(df["dateObserved"].tolist())
 
+    logging.debug(f"Length training df: {len(df)}")
+    logging.debug(f"Length weather df: {len(df_temperature)}")
 
     try:
         # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
         # But 12 yields better results?
 
+        if not len(df) == len(df_temperature):
+            raise ValueError(f"Necessary dataframes are not equal: {len(df)} != {len(df_temperature)}")
+
         logging.debug(f"start training the model")
-        logging.debug(f"DF for weather_data: \n {df_temperature.head()}")
 
         model = pm.auto_arima(df['numValue'], df_temperature,
                               start_p=1, start_q=1,
