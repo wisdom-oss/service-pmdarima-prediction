@@ -1,8 +1,8 @@
 services:
   water-demand-prediction_name:
-    image: wdp_development:0.7
+    image: wdp_training:0.7
     build: .
-    container_name: development_wdp
+    container_name: training_wdp
     volumes:
       # Bind Data from outside the container to the container
       - "/home/jstueven/files:/service-water-demand-prediction/files/smartmeterdata"
@@ -10,7 +10,7 @@ services:
       # Mount a volume to access trained models after container deletion
       - models_volume:/service-water-demand-prediction/files/trained_models
     ports:
-      - "8090:8080"
+      - "9120:8080"
     networks:
       - flask-network
 volumes:
