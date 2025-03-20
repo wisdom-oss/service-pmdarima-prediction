@@ -68,10 +68,10 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpo
     json_data["resolution"] = f"{resolution}"
     json_data["dateObserved"] = model_data["labels"]
     json_data["realValue"] = model_data["realValue"]
-    json_data["MAE"] = analysis_df["MAE"][0]
-    json_data["MSE"] = analysis_df["MSE"][0]
-    json_data["RMSE"] = analysis_df["RMSE"][0]
-    json_data["R2"] = analysis_df["R2"][0]
+    json_data["meanAbsoluteError"] = analysis_df["MAE"][0]
+    json_data["meanSquaredError"] = analysis_df["MSE"][0]
+    json_data["rootOfmeanSquaredError"] = analysis_df["RMSE"][0]
+    json_data["r2"] = analysis_df["R2"][0]
 
 
     return json_data
