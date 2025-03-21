@@ -43,8 +43,8 @@ def train_plain_model(df: pd.DataFrame):
         # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
         # But 12 yields better results?
 
-        d_value = pm.arima.ndiffs(df["numValue"], test="adf")
-        D_value = pm.arima.nsdiffs(df['numValue'], m=24, test='ocsb')
+        d_value = pm.ndiffs(df["numValue"], test="adf")
+        D_value = pm.nsdiffs(df['numValue'], m=24, test='ocsb')
 
         logging.debug(f"Optimal d value: {d_value}")
         logging.debug(f"Optimal D value: {D_value}")
