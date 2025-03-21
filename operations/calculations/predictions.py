@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import pmdarima as pm
+from pmdarima.arima import ndiffs, nsdiffs
 import matplotlib.pyplot as plt
 import time
 import logging
@@ -39,18 +40,24 @@ def train_plain_model(df: pd.DataFrame):
     :param df: df provided based on selected smartmeter data
     :return: trained SARIMAX model
     """
-
     try:
         # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
         # But 12 yields better results?
+
+        d_value = ndiffs(df["numValue"], test="adf")
+        D_value = nsdiffs(df['numValue'], m=24, test='ocsb')
+
+        logging.debug(f"Optimal d value: {d_value}")
+        logging.debug(f"Optimal D value: {D_value}")
+        logging.debug(f"start training the model")
+
         model = pm.auto_arima(df['numValue'],
                               start_p=1, start_q=1,
-                              test='adf',
                               max_p=3, max_q=3, m=24,
                               start_P=0, seasonal=True,
-                              d=0, D=1, # d =None so No Integrating was done
+                              d=d_value, D=D_value,  # d =0  so No Integrating was done, took out to do adf test
                               trace=1,
-                              error_action='ignore', #default: ignore
+                              error_action='ignore',  # default: ignore
                               suppress_warnings=True,
                               stepwise=True)
 
@@ -84,14 +91,19 @@ def train_exogenous_model(df: pd.DataFrame):
         if not len(df) == len(df_temperature):
             raise ValueError(f"Necessary dataframes are not equal: {len(df)} != {len(df_temperature)}")
 
+        d_value = ndiffs(df["numValue"], test="adf")
+        D_value = nsdiffs(df['numValue'], m=24, test='ocsb')
+
+
+        logging.debug(f"Optimal d value: {d_value}")
+        logging.debug(f"Optimal D value: {D_value}")
         logging.debug(f"start training the model")
 
         model = pm.auto_arima(df['numValue'], df_temperature,
                               start_p=1, start_q=1,
-                              test='adf',
                               max_p=3, max_q=3, m=24,
                               start_P=0, seasonal=True,
-                              d=0, D=1, # d =None so No Integrating was done
+                              d=d_value, D=D_value, # d =0  so No Integrating was done, took out to do adf test
                               trace=1,
                               error_action='ignore', #default: ignore
                               suppress_warnings=True,

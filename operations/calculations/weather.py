@@ -30,8 +30,6 @@ def request_weather_info(labels: list) -> pd.DataFrame:
 
     df = fill_missing_timestamps(df, column_name)
 
-    logging.debug(f"{df.head()} \n {df.info()}")
-
     return df[[column_name]]
 
 
@@ -99,7 +97,6 @@ def fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
         error_type = type(e).__name__
         logging.debug(f"adding missing timestamps to weather data failed. \n {error_type}: {e}")
 
-    # Fill missing values with NaN (this is already handled by 'how=left')
     return df_filled
 
 
