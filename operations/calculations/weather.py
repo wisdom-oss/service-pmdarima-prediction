@@ -7,8 +7,8 @@ import logging
 def request_weather_info(labels: list) -> pd.DataFrame:
     start, end = __convert_timestamps(labels[0], labels[-1])
 
-    #capability, column_name = "air_temperature", "TT_TU"
-    capability, column_name = "precipitation", "R1"
+    capability, column_name = "air_temperature", "TT_TU"
+    #capability, column_name = "precipitation", "R1"
 
     try:
         response = requests.get(
@@ -28,7 +28,7 @@ def request_weather_info(labels: list) -> pd.DataFrame:
 
     df = adjust_timestamp_column(df, "ts")
 
-    df = fill_missing_timestamps(df)
+    df = fill_missing_timestamps(df, column_name)
 
     logging.debug(f"{df.head()} \n {df.info()}")
 
@@ -67,7 +67,7 @@ def adjust_timestamp_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     return df
 
 
-def fill_missing_timestamps(df: pd.DataFrame) -> pd.DataFrame:
+def fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """
     creates a new date range for the df in order to check up on missing timestamps
     :param df: the original df with requested weather data
@@ -93,7 +93,7 @@ def fill_missing_timestamps(df: pd.DataFrame) -> pd.DataFrame:
         df_filled = df_filled.bfill()
 
         # replaces every -999 as a statement for missing value with a 0 to not hinder prediction
-        df_filled['R1'] = df_filled['R1'].replace(-999, 0)
+        df_filled[column_name] = df_filled[column_name].replace(-999, 0)
 
     except Exception as e:
         error_type = type(e).__name__
