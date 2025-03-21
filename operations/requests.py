@@ -2,7 +2,6 @@ from operations.calculations import json_reader, predictions as pred, save_load 
 from dotenv import load_dotenv
 import os
 import warnings
-import logging
 
 # filter all future warnings we don't use.
 warnings.filterwarnings('ignore', category=FutureWarning, message="'force_all_finite' was renamed to 'ensure_all_finite'")

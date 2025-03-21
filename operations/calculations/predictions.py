@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import pmdarima as pm
-from pmdarima.arima import ndiffs, nsdiffs
+import pmdarima.arima as pma
 import matplotlib.pyplot as plt
 import time
 import logging
@@ -44,8 +44,8 @@ def train_plain_model(df: pd.DataFrame):
         # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
         # But 12 yields better results?
 
-        d_value = ndiffs(df["numValue"], test="adf")
-        D_value = nsdiffs(df['numValue'], m=24, test='ocsb')
+        d_value = pma.ndiffs(df["numValue"], test="adf")
+        D_value = pma.nsdiffs(df['numValue'], m=24, test='ocsb')
 
         logging.debug(f"Optimal d value: {d_value}")
         logging.debug(f"Optimal D value: {D_value}")
