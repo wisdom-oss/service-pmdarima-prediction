@@ -17,6 +17,7 @@ services:
 
       # Mount a volume to access trained models after container deletion
       - models_volume:/service-water-demand-prediction/files/trained_models
+      - results_volume:/service-water-demand-prediction/files/results
     ports:
       - "8090:8080"
     networks:

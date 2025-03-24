@@ -14,7 +14,6 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),  # Log output will appear in the console (stdout)
-        # logging.FileHandler("arima_model.log", mode='a')  # Save logs to arima_model.log file
     ]
 )
 
@@ -27,7 +26,6 @@ def hello_world():
 def meterInformation():
     try:
         return jsonify(req.read_meter_information())
-
     except Exception as e:
         logging.debug(e)
         # status code decided how angular understands response
@@ -65,7 +63,7 @@ def train_model_on_smartmeter():
                                         request.json["timeframe"],
                                         request.json["resolution"],
                                         request.json["startpoint"],
-                                        request.json["useWeather"]
+                                        request.json["weatherCapability"]
                                         )
         return jsonify(data)
     except Exception as e:
@@ -86,7 +84,7 @@ def pred_from_model():
                                       request.json["timeframe"],
                                       request.json["resolution"],
                                       request.json["startpoint"],
-                                      request.json["useWeather"]
+                                      request.json["weatherCapability"]
                                       )
 
         return jsonify(data)

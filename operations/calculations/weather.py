@@ -4,22 +4,24 @@ from datetime import datetime, timedelta
 import pandas as pd
 import logging
 
-def request_weather_info(labels: list) -> pd.DataFrame:
+def request_weather_info(labels: list, capability: str) -> pd.DataFrame:
     start, end = __convert_timestamps(labels[0], labels[-1])
 
-    capability, column_name = "air_temperature", "TT_TU"
-    #capability, column_name = "precipitation", "R1"
+    if capability == "air_temperature":
+        column_name = "TT_TU"
+    elif capability == "precipitation":
+        column_name = "T1"
+    elif capability == "moisture":
+        column_name = "ABSF_STD"
 
     try:
         response = requests.get(
             f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
         )
 
-        logging.debug("successfully requested weather info")
-
     except Exception as e:
         error_type = type(e).__name__
-        logging.debug(f"Request to Weather-API failed. \n {error_type}: {e}")
+        logging.debug(f"Request to Weather-API failed. {error_type}: {e}")
 
     data = response.json()
 

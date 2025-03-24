@@ -44,21 +44,24 @@ def extract_single_smartmeter(meter_name, timeframe: str, resolution: str, start
 
     return json_data
 
-def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
+def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpoint: str, capability: str):
 
-    model_data = so.load_model_by_name(meter_name, timeframe, resolution, startpoint, exogen)
+    model_data = so.load_model_by_name(meter_name, timeframe, resolution, startpoint, capability)
 
+    # if model is wrongly trained, capture it
     if isinstance(model_data, str):
         return model_data
 
-    # create weather data to accompany predictions
-    df_weather = weather.request_weather_info(model_data["labels"])
+    exogen_df = None
+    if capability != "plain":
+        # create weather data to accompany predictions
+        df_weather = weather.request_weather_info(model_data["labels"], capability)
+        exogen_df = df_weather
 
-    pred_df = pred.create_forecast_data(model_data["model"], 24, df_weather)
+    pred_df = pred.create_forecast_data(model_data["model"], 24, exogen_df)
 
     # add the analysis results to the request
     analysis_df = analysis.analyze_prediction(model_data["realValue"], pred_df["numValue"])
-
 
     # add bonus information back to dataframe
     json_data = pred_df.to_dict(orient="list")
@@ -67,19 +70,24 @@ def load_and_use_model(meter_name: str, timeframe: str, resolution: str, startpo
     json_data["resolution"] = f"{resolution}"
     json_data["dateObserved"] = model_data["labels"]
     json_data["realValue"] = model_data["realValue"]
+    json_data["aic"] = model_data["model"].aic()
+    json_data["fit_time"] = model_data["training_time"]
     json_data["meanAbsoluteError"] = analysis_df["MAE"][0]
     json_data["meanSquaredError"] = analysis_df["MSE"][0]
     json_data["rootOfmeanSquaredError"] = analysis_df["RMSE"][0]
     json_data["r2"] = analysis_df["R2"][0]
 
 
+    # save json results to a folder.
+    so.save_results_to_json_file(meter_name, timeframe, resolution, startpoint, capability, json_data)
+
     return json_data
 
-def train_and_save_model(meter_name: str, timeframe: str, resolution: str, startpoint: str, exogen: bool):
+def train_and_save_model(meter_name: str, timeframe: str, resolution: str, startpoint: str, capability: str):
     # create a dataframe based on the provided parameters
     df = json_reader.create_df_from_smartmeter(meter_name, timeframe, resolution, startpoint)
 
-    if not so.has_duplicates(meter_name, timeframe, resolution, startpoint):
+    if not so.has_duplicates(meter_name, timeframe, resolution, startpoint, capability):
 
         # create date labels for the prediction models
         labels = pred.create_labels(df)
@@ -91,16 +99,17 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str, start
         labels = labels["Date"].dt.strftime(os.getenv("DATETIME_STANDARD_FORMAT")).tolist()
 
         # train the model based on exogenous bool
-        model = pred.train_model(exogen, df)
+        model, training_time = pred.train_final_models(df, capability)
 
         # save the model as well as used labels
         model_data = {
             "labels": labels,
             "model": model,
-            "realValue": data
+            "realValue": data,
+            "training_time": training_time
         }
 
-        return so.save_model_by_name(model_data, meter_name, timeframe, resolution, startpoint, exogen)
+        return so.save_model_by_name(model_data, meter_name, timeframe, resolution, startpoint, capability)
     else:
         raise ValueError("model exists already!")
 

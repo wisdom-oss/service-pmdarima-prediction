@@ -1,9 +1,11 @@
 import pandas as pd
 import numpy as np
 import pmdarima as pm
-import matplotlib.pyplot as plt
 import time
 import logging
+
+from pandas import DataFrame
+
 from operations.calculations import weather
 
 def time_it(func):
@@ -19,57 +21,8 @@ def time_it(func):
         return result
     return wrapper
 
-def train_model(exogenous: bool, df: pd.DataFrame) -> pd.DataFrame:
-    """
-    train a model based on a flag with or without exogenous variables
-    :param exogenous: true if exogenous variables are used
-    :param df: dataframe
-    :return: trained model
-    """
 
-    if exogenous:
-        return train_exogenous_model(df)
-    elif not exogenous:
-        return train_plain_model(df)
-
-@time_it
-def train_plain_model(df: pd.DataFrame):
-    """
-    create a trained SARIMAX Model based on the dataframe provided
-    :param df: df provided based on selected smartmeter data
-    :return: trained SARIMAX model
-    """
-    try:
-        # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
-        # But 12 yields better results?
-
-        d_value = pm.ndiffs(df["numValue"], test="adf")
-        D_value = pm.nsdiffs(df['numValue'], m=24, test='ocsb')
-
-        logging.debug(f"Optimal d value: {d_value}")
-        logging.debug(f"Optimal D value: {D_value}")
-        logging.debug(f"start training the model")
-
-        model = pm.auto_arima(df['numValue'],
-                              start_p=1, start_q=1,
-                              max_p=3, max_q=3, m=24,
-                              start_P=0, seasonal=True,
-                              d=d_value, D=D_value,  # d =0  so No Integrating was done, took out to do adf test
-                              trace=1,
-                              error_action='ignore',  # default: ignore
-                              suppress_warnings=True,
-                              stepwise=True)
-
-        logging.debug(model.summary())
-
-        return model
-    except Exception as e:
-        error_type = type(e).__name__
-        logging.debug(f"Training Arima Model failed. \n {error_type}: {e}")
-
-
-@time_it
-def train_exogenous_model(df: pd.DataFrame):
+def train_final_models(df: pd.DataFrame, capability: str):
     """
     create a trained SARIMAX Model based on the dataframe provided
     :param df: df provided based on selected smartmeter data
@@ -78,45 +31,59 @@ def train_exogenous_model(df: pd.DataFrame):
 
     df["dateObserved"] = df["dateObserved"].dt.strftime('%d.%m.%y %H:%M')
 
-    df_temperature = weather.request_weather_info(df["dateObserved"].tolist())
-
-    logging.debug(f"Length training df: {len(df)}")
-    logging.debug(f"Length weather df: {len(df_temperature)}")
-
     try:
         # m = number of observations per seasonal cycle (24 as in 24 observations in 1 day(season).
         # But 12 yields better results?
 
-        if not len(df) == len(df_temperature):
-            raise ValueError(f"Necessary dataframes are not equal: {len(df)} != {len(df_temperature)}")
+        exogen_df = None
+
+        if capability != "plain":
+            df_temperature = weather.request_weather_info(df["dateObserved"].tolist(), capability)
+            logging.debug(f"Length Weather: {len(df_temperature)}, Length Training: {len(df)}")
+            if not len(df) == len(df_temperature):
+                raise ValueError(f"Necessary dataframes are not equal: {len(df)} != {len(df_temperature)}")
+            exogen_df = df_temperature
 
         d_value = pm.arima.ndiffs(df["numValue"], test="adf")
         D_value = pm.arima.nsdiffs(df['numValue'], m=24, test='ocsb')
+        logging.debug(f"Optimal d: {d_value} and D: {D_value}, Start Training \n")
 
+        start_time = time.time()
+        logging.debug(f"Start training at: {start_time}")
 
-        logging.debug(f"Optimal d value: {d_value}")
-        logging.debug(f"Optimal D value: {D_value}")
-        logging.debug(f"start training the model")
-
-        model = pm.auto_arima(df['numValue'], df_temperature,
-                              start_p=1, start_q=1,
-                              max_p=3, max_q=3, m=24,
-                              start_P=0, seasonal=True,
-                              d=d_value, D=D_value, # d =0  so No Integrating was done, took out to do adf test
+        model = pm.auto_arima(df['numValue'], X=exogen_df,
+                              m=24,
+                              seasonal=True,
+                              d=d_value, D=D_value,
                               trace=1,
-                              error_action='ignore', #default: ignore
+                              error_action='ignore',
                               suppress_warnings=True,
                               stepwise=True)
 
+        end_time = time.time()
+        logging.debug(f"End training at: {end_time}")
+
+        training_time = end_time - start_time
+        logging.debug(f"Duration of training: {training_time}")
+
+
+        # original values: start_p=1, start_q=1,
+        #                  max_p=3, max_q=3, m=24,
+        #                  start_P=0, seasonal=True,
+        #                  d=d_value, D=D_value,
+        #                  trace=1, error_action='ignore',
+        #                  suppress_warnings=True,
+        #                  stepwise=True)
+
         logging.debug(model.summary())
 
-        return model
+        return model, training_time
     except Exception as e:
         error_type = type(e).__name__
         logging.debug(f"Training Arima Model failed. \n {error_type}: {e}")
 
 
-def create_labels(df: pd.DataFrame, resolution: str = "hourly") -> pd.DataFrame:
+def create_labels(df: pd.DataFrame, resolution: str = "hourly") -> DataFrame | None:
     n_periods = 24
 
     try:
@@ -155,19 +122,15 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
     :return: df of confidence intervalls
     lower and upper and pred_values
     """
-    sarimax_model = model
-
-    # Generate a dataframe of all exogenous variable to use while predicting data
-    #future_exog = create_exogenous_variables_for_prediction(future_index)
 
     try:
 
         # Make predictions with confidence intervals
-        predicted_values, conf_intervals = sarimax_model.predict(
+        predicted_values, conf_intervals = model.predict(
             n_periods=n_periods,
             X=exogenous_df,  # add exogenous variables when ready
             return_conf_int=True, # return confidence intervalls
-            alpha=0.01 # confidence intervall of standard 95%
+            alpha=0.1 # confidence intervall of standard 95%
         )
     except Exception as e:
         error_type = type(e).__name__
@@ -195,20 +158,6 @@ def create_exogenous_variables(prediction_indexes):
     }, index=prediction_indexes)
 
     return future_exog
-
-
-def plot_forecast(df, fitted_series, lower_series, upper_series):
-    # Plot
-    plt.figure(figsize=(15, 7))
-    plt.plot(df["numValue"], color='#1f76b4')
-    plt.plot(fitted_series, color='darkgreen')
-    plt.fill_between(lower_series.index,
-                     lower_series,
-                     upper_series,
-                     color='k', alpha=.15)
-
-    plt.title("SARIMAX - Forecast of Smartmeter Data")
-    plt.show()
 
 
 
