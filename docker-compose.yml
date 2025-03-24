@@ -23,7 +23,8 @@ services:
     networks:
       - flask-network
 volumes:
-  models_volume: #Done?
+  models_volume: #Done?#
+  results_volume:
 networks:
   flask-network:
     driver: bridge
