@@ -10,7 +10,7 @@ def request_weather_info(labels: list, capability: str) -> pd.DataFrame:
     if capability == "air_temperature":
         column_name = "TT_TU"
     elif capability == "precipitation":
-        column_name = "T1"
+        column_name = "R1"
     elif capability == "moisture":
         column_name = "ABSF_STD"
 

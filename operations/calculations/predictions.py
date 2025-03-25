@@ -78,6 +78,8 @@ def train_final_models(df: pd.DataFrame, capability: str):
         logging.debug(model.summary())
 
         return model, training_time
+    except ValueError as e:
+        logging.debug(f"training failed, because of different weather lenghts" + e)
     except Exception as e:
         error_type = type(e).__name__
         logging.debug(f"Training Arima Model failed. \n {error_type}: {e}")
