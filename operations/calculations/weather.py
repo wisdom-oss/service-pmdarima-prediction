@@ -14,6 +14,10 @@ def request_weather_info(labels: list, capability: str) -> pd.DataFrame:
     elif capability == "moisture":
         column_name = "ABSF_STD"
 
+    # workaround for 3 months before bug fix
+    if len(labels) == 2160:
+        end += 60*60
+
     try:
         response = requests.get(
             f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
