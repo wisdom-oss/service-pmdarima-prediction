@@ -14,20 +14,25 @@ def request_weather_info(labels: list, capability: str) -> pd.DataFrame:
     elif capability == "moisture":
         column_name = "ABSF_STD"
 
-    # workaround for 3 months before bug fix
-    if len(labels) == 2160:
-        end += 60*60
-
     try:
         response = requests.get(
             f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
         )
 
+        data = response.json()
+
+        if len(data["timeseries"]) != len(labels):
+            logging.debug(f"{len(data["timeseries"])} and {len(labels)} are not the same")
+            end += 60*60
+
+            response = requests.get(
+                f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
+            )
+            data = response.json()
+
     except Exception as e:
         error_type = type(e).__name__
         logging.debug(f"Request to Weather-API failed. {error_type}: {e}")
-
-    data = response.json()
 
     # Transform into DataFrame
     df = json_normalize(data["timeseries"])
