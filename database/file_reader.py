@@ -1,11 +1,12 @@
 import os
 import pandas as pd
+from datetime import datetime, timezone
 from root_file import ROOT_DIR
 from dotenv import load_dotenv
-from datetime import datetime, timezone
+
 
 def format_smartmeter_data():
-    df = __read_smartmeter_data(False)
+    df = read_smartmeter_data(False)
 
     # filter out unnecessary columns
     df = df[["dateObserved", "refDevice", "numValue"]]
@@ -13,18 +14,14 @@ def format_smartmeter_data():
     # shorten name handle
     device_prefix = os.getenv("DEVICE_PREFIX")
     df["refDevice"] = df["refDevice"].apply(lambda x: x.replace(device_prefix, ""))
-    df["refDevice"] = df["refDevice"].apply(lambda x: x.replace("-household", ""))
 
-    # format time to incorporate timezone
-    origin_format = os.getenv("DATETIME_ORIGIN")
-    utc_format = os.getenv("DATETIME_UTC_ENSURE")
-    df['dateObserved'] = df['dateObserved'].apply(lambda x: datetime.strptime(x, origin_format)
-                                                  .replace(tzinfo=timezone.utc)
-                                                  .strftime(utc_format))
+    # create unix_timestamp
+    df["dateObserved"] = pd.to_datetime(df["dateObserved"])
+    df["unix_time"] = df["dateObserved"].apply(lambda x: int(x.timestamp()))
 
     return df
 
-def __read_smartmeter_data(metaCheck: bool):
+def read_smartmeter_data(metaCheck: bool):
     """
     read in the json data
     :param metaCheck: if true, read in meta data
@@ -43,4 +40,23 @@ def __read_smartmeter_data(metaCheck: bool):
     df = pd.read_json(path)
 
     return df
+
+def convert_unix_ts(unix_time: int):
+    """
+    convert unix time to timestamp
+    :param unix_time: unix timestamp
+    :return: readable timestamp
+    """
+    return datetime.fromtimestamp(unix_time, tz=timezone.utc).isoformat()
+
+def convert_ts_unix(ts):
+    """
+    convert timestamp to unix time
+    :param ts: readable timestamp
+    :return: unix timestamp
+    """
+    ts = pd.to_datetime(ts)
+    return ts.timestamp()
+
+
 

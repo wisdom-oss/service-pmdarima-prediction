@@ -1,12 +1,16 @@
 import psycopg2
 import os
-import file_reader
-
 from dotenv import load_dotenv
+from database import file_reader
 
 
 def create_connection():
+    """
+    create a database connection to the postgres database
+    :return: connection object
+    """
     load_dotenv()
+
     connection = psycopg2.connect(database=os.getenv("DB"),
                                   user=os.getenv("USER"),
                                   password=os.getenv("PW"),
@@ -17,28 +21,28 @@ def create_connection():
 
 
 def create_table():
-    try:
-        # open connection
-        connection = create_connection()
-        cursor = connection.cursor()
+    """
+    create the database table
+    :return: None
+    """
+    # load table create string
+    load_dotenv()
+    table_string = os.getenv("TABLE_STRING")
 
-        # load table create string
-        load_dotenv()
-        table_string = os.getenv("TABLE_STRING")
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            # execute creation
+            cursor.execute(table_string)
+            connection.commit()
 
-        # execute creation
-        cursor.execute(table_string)
-        connection.commit()
-
-        print("Table created successfully!")
-    except Exception as e:
-        print(f"Error creating table: {e}")
-    finally:
-        cursor.close()
-        connection.close()
+            print("Table created successfully!")
 
 
 def insert_data():
+    """
+    insert data based on files in smartmeterdata
+    :return: None
+    """
 
     # read in whole json data
     df = file_reader.format_smartmeter_data()
@@ -47,22 +51,30 @@ def insert_data():
     load_dotenv()
     insert_string = os.getenv("INSERT_STRING")
 
-    try:
-        connection = create_connection()
-        cursor = connection.cursor()
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
 
-        # iterate through every row in df
-        for row in df.itertuples(name=None):
-            cursor.execute(insert_string, (row[1], row[2], row[3]))
-            print(f"Row {row[0]+1}_{row[1]}_{row[2]}_{row[3]} inserted!")
-
-        # commit after whole json is read in
-        connection.commit()
-    except Exception as e:
-        print(f"Error in {row[0]+1}: {e}")
-    finally:
-        cursor.close()
-        connection.close()
+            # iterate through every row in df
+            for row in df.itertuples(name=None):
+                # ignore index row[0]
+                cursor.execute(insert_string, (row[1], row[2], row[3], row[4]))
+                print(f"Row {row[0] + 1}_{row[1]}_{row[2]}_{row[3]} inserted!")
 
 
+def request_value_unix_time(meter_name: str, start: int, end: int) -> list or None:
+    """
+    request data from db
+    :param meter_name: name of smartmeter
+    :param start: unix time of first record
+    :param end: unix time of last record
+    :return: list or None of results
+    """
+    load_dotenv()
+    query_string = os.getenv("SEARCH_STRING_NAME_START_END")
+
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            query = query_string
+            cursor.execute(query, (meter_name, start, end))
+            return cursor.fetchall()
 
