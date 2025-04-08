@@ -16,6 +16,9 @@ COPY requirements.txt /service-water-demand-prediction/
 # Install dependencies
 RUN pip install -r requirements.txt
 
+# installation over standard not working
+pip install "psycopg[binary]"
+
 # Copy the rest of your application code into the container
 COPY . /service-water-demand-prediction/
 

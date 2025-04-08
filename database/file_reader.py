@@ -1,6 +1,5 @@
 import os
 import pandas as pd
-from datetime import datetime, timezone
 from root_file import ROOT_DIR
 from dotenv import load_dotenv
 
@@ -15,9 +14,8 @@ def format_smartmeter_data():
     device_prefix = os.getenv("DEVICE_PREFIX")
     df["refDevice"] = df["refDevice"].apply(lambda x: x.replace(device_prefix, ""))
 
-    # create unix_timestamp
-    df["dateObserved"] = pd.to_datetime(df["dateObserved"])
-    df["unix_time"] = df["dateObserved"].apply(lambda x: int(x.timestamp()))
+    # add timezone information (none, because of utc)
+    df["dateObserved"] = pd.to_datetime(df["dateObserved"], utc=True)
 
     return df
 
@@ -40,23 +38,6 @@ def read_smartmeter_data(metaCheck: bool):
     df = pd.read_json(path)
 
     return df
-
-def convert_unix_ts(unix_time: int):
-    """
-    convert unix time to timestamp
-    :param unix_time: unix timestamp
-    :return: readable timestamp
-    """
-    return datetime.fromtimestamp(unix_time, tz=timezone.utc).isoformat()
-
-def convert_ts_unix(ts):
-    """
-    convert timestamp to unix time
-    :param ts: readable timestamp
-    :return: unix timestamp
-    """
-    ts = pd.to_datetime(ts)
-    return ts.timestamp()
 
 
 
