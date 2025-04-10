@@ -8,12 +8,13 @@ CORS(app)
 
 prefix = "/waterdemand"
 
-# Set up logging to capture both console output (stdout) and log file
+# loger setup
 logging.basicConfig(
-    level=logging.DEBUG,  # Capture all log levels from DEBUG and higher
+    # Capture all log levels from DEBUG and higher
+    level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.StreamHandler(sys.stdout),  # Log output will appear in the console (stdout)
+        logging.StreamHandler(sys.stdout)
     ]
 )
 

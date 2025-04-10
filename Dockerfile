@@ -4,14 +4,12 @@ FROM python:3.12.9-bookworm
 # Set the working directory in the container
 WORKDIR /service-water-demand-prediction
 
-# Install system dependencies (build-essential, gcc, etc.)
-RUN apt-get update
-# && apt-get install -y python3-dev gcc
-
-RUN pip install --upgrade pip
-
 # Copy your requirements.txt into the container
 COPY requirements.txt /service-water-demand-prediction/
+
+# Install updates
+RUN apt-get update
+RUN pip install --upgrade pip
 
 # Install dependencies
 RUN pip install -r requirements.txt

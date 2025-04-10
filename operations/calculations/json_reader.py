@@ -112,7 +112,7 @@ def __gain_start_end_date(timeframe: str, startpoint: str) -> [str, str]:
             end = start_point + relativedelta(months=12)
         case "all":
             # CAUTION WHEN HAVING MORE DATA THAN 5 years!
-            end = start_point + relativedelta(months=23)
+            end = start_point + relativedelta(months=24)
 
     # reduce end by 1 minute, because unix doesn't recognize lower timechanges
     # in order to invalidate the last entry,

@@ -1,0 +1,114 @@
+import requests
+import pandas as pd
+import logging
+from pandas import json_normalize
+
+def get_weather_capabilities(reqCols: bool) -> dict:
+    """
+    return a list of all weather capabilities
+    :param reqCols: True when requesting all columns as well, false else
+    :return: dict of weather capabilities
+    """
+    response = requests.get(f"https://wisdom-demo.uol.de/api/dwd/00691")
+    data = response.json()
+    capabilities = {}
+
+    min_date = pd.to_datetime("2021-05-26 00:00:00", utc=True)
+    max_date = pd.to_datetime("2023-05-26 00:00:00", utc=True)
+
+    for entry in data["capabilities"]:
+        entry["availableFrom"] = pd.to_datetime(entry["availableFrom"], utc=True)
+        entry["availableUntil"] = pd.to_datetime(entry["availableUntil"], utc=True)
+
+        # rule out every datatype not having hourly data or not inside the timeframe of the data
+        if entry["resolution"] != "hourly":
+            logging.debug(f"{entry["dataType"]} not available, because of resolution: {entry['resolution']}")
+            continue
+        if entry["availableFrom"] > min_date:
+            logging.debug(f"{entry["dataType"]} not available, because of MIN: {entry['availableFrom']}")
+            continue
+        if entry["availableUntil"] < max_date:
+            logging.debug(f"{entry["dataType"]} not available, because of MAX: {entry['availableUntil']}")
+            continue
+
+        # add dict entries when requesting columns
+        capabilities[entry["dataType"]] = []
+
+    if reqCols:
+        capabilities = get_columns_of_weather(capabilities)
+
+    return capabilities
+
+def get_columns_of_weather(capabilities: dict) -> dict:
+    """
+    request every column of every weather capability
+    :param capabilities: dict of capabilities
+    :return: dict of capabilities with column entries
+    """
+    MIN_DATE = pd.to_datetime("2021-05-26 00:00:00", utc=True)
+    unix_start = int(MIN_DATE.timestamp())
+    unix_end = int(unix_start + 60)
+
+    for capability in capabilities:
+        response = requests.get(f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={unix_start}&until={unix_end}")
+        data = response.json()
+
+        if data.get("timeseries") and isinstance(data["timeseries"], list):
+            for column in data["timeseries"][0]:
+                capabilities[capability].append(column)
+
+    return capabilities
+
+def get_weather_data(start, end, capability: str, column: str) -> pd.DataFrame:
+    """
+    request weather data from dwd
+    :param start: start timestamp to search for
+    :param end: end timestamp to search for
+    :param capability: kind of weather data to request
+    :param column: column of capability to request
+    """
+    df = pd.DataFrame()
+
+    try:
+        response = requests.get(
+            f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
+        )
+        data = response.json()
+
+        df = json_normalize(data["timeseries"])
+    except Exception as e:
+        logging.debug(f"DWD request failed, because: {e}")
+
+    # fill data spots inside weather data to fill in missing timestamps
+    df = fill_missing_timestamps(df, column)
+
+    return df[[column, "ts"]]
+
+def fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    """
+    create missing timestamps in weather data in between start and end date
+    :param df: df of weather info
+    :param column_name: column to check for missing data
+    :return:
+    """
+
+    # Ensure the 'timestamp' column is in datetime format
+    df['ts'] = pd.to_datetime(df['ts'], format='%Y-%m-%dT%H:%M:%SZ')
+
+    # Create a date range from the first to the last timestamp in the DataFrame
+    all_timestamps = pd.date_range(start=df['ts'].min(), end=df['ts'].max(), freq='h')
+    all_timestamps_df = pd.DataFrame(all_timestamps, columns=['ts'])
+
+    # Merge the new date range with the original DataFrame
+    df_filled = pd.merge(all_timestamps_df, df, on='ts', how='left')
+
+    # Backfill missing values (NaN)
+    df_filled = df_filled.bfill()
+
+    # replaces every -999 as a statement for missing value with a 0 to not hinder prediction
+    df_filled[column_name] = df_filled[column_name].replace(-999, 0)
+
+    return df_filled
+
+
+
