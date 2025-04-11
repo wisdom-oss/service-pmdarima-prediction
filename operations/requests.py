@@ -105,7 +105,6 @@ def train_and_save_model(meter_name: str, timeframe: str, resolution: str, start
         model_data = {
             "labels": labels,
             "model": model,
-            "realValue": data,
             "training_time": training_time
         }
 

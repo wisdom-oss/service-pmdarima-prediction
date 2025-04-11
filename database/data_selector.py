@@ -1,21 +1,40 @@
-import os
-
+import psycopg
 from dotenv import load_dotenv
 from database import db_connector
 
-def request_date_value(meter_name: str, start: int, end: int) -> list or None:
+def query_fetch_one(query_string: str, params: list) -> dict or None:
+    """
+    fetch_all function to use when querying data
+    :param query_string: select string to use
+    :param params: lst of parameters
+    :return: dict of results or None if None
+    """
+    with db_connector.create_connection() as connection:
+        with connection.cursor(row_factory=psycopg.rows.dict_row) as cursor:
+            query = query_string
+            cursor.execute(query, (tuple(params)))
+            result = cursor.fetchone()
+            return result
+
+def select_date_value(meter_name: str, start, end) -> dict or None:
     """
     request data from db
     :param meter_name: name of smartmeter
     :param start: unix time of first record
     :param end: unix time of last record
-    :return: list or None of results
+    :return: dict or None of results
     """
     load_dotenv()
-    query_string = os.getenv("SEARCH_STRING_NAME_START_END")
+    query_string = "SELECT array_agg(value ORDER BY date) AS value, array_agg(date ORDER by date) AS date FROM timeseries.water_demand_prediction WHERE name=%s AND date BETWEEN %s AND %s"
 
-    with db_connector.create_connection() as connection:
-        with connection.cursor() as cursor:
-            query = query_string
-            cursor.execute(query, (meter_name, start, end))
-            return cursor.fetchall()
+    return query_fetch_one(query_string, [meter_name, start, end])
+
+def select_names() -> dict or None:
+    """
+    request names of data from db, based on first timestamp (currently)
+    :return: dict of names
+    """
+    search_date = "2021-05-26 00:00:00"
+    search_string = "SELECT array_agg(name ORDER BY date) as names FROM timeseries.water_demand_prediction WHERE date=%s"
+    return query_fetch_one(search_string, [search_date])
+

@@ -59,7 +59,7 @@ def get_columns_of_weather(capabilities: dict) -> dict:
 
     return capabilities
 
-def get_weather_data(start, end, capability: str, column: str) -> pd.DataFrame:
+def get_weather_data(capability: str, column: str, start, end) -> pd.DataFrame:
     """
     request weather data from dwd
     :param start: start timestamp to search for
@@ -68,6 +68,9 @@ def get_weather_data(start, end, capability: str, column: str) -> pd.DataFrame:
     :param column: column of capability to request
     """
     df = pd.DataFrame()
+
+    if capability == "plain":
+        return None
 
     try:
         response = requests.get(
