@@ -93,7 +93,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     :param column_name: column name of dwd data
     :return: None
     """
-    start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S.%f %z")
+    start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S")
     end_date = create_end_date(timeframe, start_date)
     start = int(start_date.timestamp())
     end = int(end_date.timestamp())
@@ -125,18 +125,29 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     :param column_name: from dwd
     :return: json representation of metrics and parameters
     """
+
+    # load model by parameters
     model_dict = save_load_models.load_model_by_name(meter_name, timeframe, resolution, start_date, weather_capability, column_name)
 
+    # create 24 forecast label dates
     forecast_labels = data_forecast.create_forecast_labels(model_dict["end_date"],24, resolution)
 
+    # use labels to get weather info
     weather_df = dwd_weather.get_weather_data(weather_capability, column_name, int(forecast_labels[0].timestamp()), int(forecast_labels[-1].timestamp()))
 
+    # use model and weather info to get predicted data
     forecast_df = data_forecast.create_forecast_data(model_dict["model"], 24, weather_df[[column_name]])
 
+    # select real values to compare with predicted data
     real_values = ds.select_date_value(meter_name, forecast_labels[0], forecast_labels[-1])["value"]
 
+    # evaluate model prediction
     metrics_df = model_metrics.calculate_metrics(real_values, forecast_df["value"])
 
+    # change labels to string repr
+    forecast_labels = [dt_index.strftime("%Y-%m-%dT%H:%M:%S") for dt_index in forecast_labels]
+
+    # build dict data object
     data = forecast_df.to_dict(orient="list")
     data["name"] = f"{meter_name}"
     data["timeframe"] = f"{timeframe}"
@@ -152,11 +163,5 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
 
     return data
 
-
-
-
-
-#train_model("atypical-household","one week", "hourly", "2021-05-26 00:00:00.000000 +00:00", "air_temperature", "TT_TU")
-forecast("atypical-household","one week", "hourly", "2021-05-26 00:00:00.000000 +00:00", "air_temperature", "TT_TU")
 
 

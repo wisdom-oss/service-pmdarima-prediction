@@ -1,6 +1,7 @@
-import datetime
 import pandas as pd
 import logging
+
+from warnings import simplefilter
 
 def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
     """
@@ -13,6 +14,9 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
     """
 
     logging.debug("Creating forecast data")
+
+    # ignore all future warnings
+    simplefilter(action='ignore', category=FutureWarning)
 
     # Make predictions with confidence intervals
     predicted_values, conf_intervals = model.predict(

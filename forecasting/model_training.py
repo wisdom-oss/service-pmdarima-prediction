@@ -3,6 +3,8 @@ import time
 import pmdarima as pm
 import pandas as pd
 
+from warnings import simplefilter
+
 def train_model(df: pd.DataFrame, weather_df: pd.DataFrame or None):
     """
     train a model based on the data and exogen weather data
@@ -11,6 +13,9 @@ def train_model(df: pd.DataFrame, weather_df: pd.DataFrame or None):
     :return: trained model and set training time
     """
 
+    # ignore all future warnings
+    simplefilter(action='ignore', category=FutureWarning)
+
     d_value = pm.arima.ndiffs(df["value"], test="adf")
     D_value = pm.arima.nsdiffs(df['value'], m=24, test='ocsb')
     logging.debug(f"Optimal d: {d_value} and D: {D_value}, Start Training \n")
@@ -18,6 +23,8 @@ def train_model(df: pd.DataFrame, weather_df: pd.DataFrame or None):
     start_time = time.time()
     logging.debug(f"Start training at: {start_time}")
 
+
+    # train model
     model = pm.auto_arima(df['value'], X=weather_df,
                           m=24,
                           seasonal=True,

@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from operations import requests as req
+from data_results import transformer
 import logging, sys
 
 app = Flask(__name__)
@@ -20,17 +20,12 @@ logging.basicConfig(
 
 @app.route(f"{prefix}/helloworld", methods=["GET"])
 def hello_world():
-    return "<p>Hello, World!</p>"
+    return jsonify("Hello, World!")
 
 
 @app.route(f"{prefix}/meterInformation", methods=["GET"])
 def meterInformation():
-    try:
-        return jsonify(req.read_meter_information())
-    except Exception as e:
-        logging.debug(e)
-        # status code decided how angular understands response
-        return jsonify({"error in /meterInformation": str(e)}), 400
+    return jsonify(transformer.get_meternames())
 
 
 @app.route(f"{prefix}/singleSmartmeter", methods=["POST"])
@@ -39,17 +34,12 @@ def single_smartmeter():
     get data of a chosen smartmeter and chosen timely frame
     :return: amount of smartmeter data
     """
-
-    try:
-        data = req.extract_single_smartmeter(request.json["name"],
-                                             request.json["timeframe"],
-                                             request.json["resolution"],
-                                             request.json["startpoint"]
-                                             )
-        return jsonify(data)
-    except Exception as e:
-        logging.debug(f"error in /singleSmartmeter: {e}")
-        return jsonify({"error in /singleSmartmeter": str(e)}), 400
+    data = transformer.get_smartmeter_data(request.json["name"],
+                                           request.json["timeframe"],
+                                           request.json["resolution"],
+                                           request.json["startpoint"]
+                                           )
+    return jsonify(data)
 
 
 @app.route(f"{prefix}/trainModel", methods=["POST"])
@@ -59,17 +49,14 @@ def train_model_on_smartmeter():
     :return: predicted values with conf_intervals
     """
 
-    try:
-        data = req.train_and_save_model(request.json["name"],
-                                        request.json["timeframe"],
-                                        request.json["resolution"],
-                                        request.json["startpoint"],
-                                        request.json["weatherCapability"]
-                                        )
-        return jsonify(data)
-    except Exception as e:
-        logging.debug(f"error in /trainModel: {e}")
-        return jsonify({"error in /trainModel": str(e)}), 400
+    data = transformer.train_model(request.json["name"],
+                                   request.json["timeframe"],
+                                   request.json["resolution"],
+                                   request.json["startpoint"],
+                                   request.json["weatherCapability"],
+                                   request.json["columnName"]
+                                   )
+    return jsonify(data)
 
 
 @app.route(f"{prefix}/loadModelAndPredict", methods=["POST"])
@@ -78,20 +65,15 @@ def pred_from_model():
     get data of a chosen smartmeter and chosen timely frame
     :return: predicted values with conf_intervals
     """
-    print("Start creating forecast!")
 
-    try:
-        data = req.load_and_use_model(request.json["name"],
-                                      request.json["timeframe"],
-                                      request.json["resolution"],
-                                      request.json["startpoint"],
-                                      request.json["weatherCapability"]
-                                      )
-
-        return jsonify(data)
-    except Exception as e:
-        logging.debug(f"error in /loadModelAndPredict: {e}")
-        return jsonify({"error in /loadModelAndPredict": str(e)}), 400
+    data = transformer.forecast(request.json["name"],
+                                request.json["timeframe"],
+                                request.json["resolution"],
+                                request.json["startpoint"],
+                                request.json["weatherCapability"],
+                                request.json["columnName"]
+                                )
+    return jsonify(data)
 
 
 if __name__ == "__main__":
