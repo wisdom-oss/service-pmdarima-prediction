@@ -3,6 +3,7 @@
 /files/backup_models/*
 /files/trained_models/*
 /files/results/*
+/files/new_models/*
 /.idea
 
 # Byte-compiled / optimized / DLL files
