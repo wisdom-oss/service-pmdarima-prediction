@@ -94,7 +94,9 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     :return: None
     """
     start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S")
+    start_date = start_date.replace(tzinfo=datetime.timezone.utc)
     end_date = create_end_date(timeframe, start_date)
+    end_date = end_date.replace(tzinfo=datetime.timezone.utc)
     start = int(start_date.timestamp())
     end = int(end_date.timestamp())
 
