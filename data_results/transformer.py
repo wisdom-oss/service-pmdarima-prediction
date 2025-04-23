@@ -14,19 +14,13 @@ def get_meternames() -> dict or None:
     """
     return ds.select_names()
 
-def get_timeframes() -> dict:
+def get_weather_capabilities(columns: bool) -> dict:
     """
-    return all possible timeframes for the service
-    :return: dict with list of timeframes
+    request weather capabilities
+    :param columns: if true -> also columns, false else
+    :return: dict of weather capabilities
     """
-    return {"timeframes": ["one week", "one month", "three months", "six months", "one year", "all"]}
-
-def get_resolutions() -> dict:
-    """
-    return all possible resolutions
-    :return: dict with list of resolutions
-    """
-    return {"resolutions": ["hourly", "daily", "weekly"]}
+    return dwd_weather.get_weather_capabilities(columns)
 
 def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> dict or None:
     """
@@ -93,10 +87,15 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     :param column_name: column name of dwd data
     :return: None
     """
-    start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S")
-    start_date = start_date.replace(tzinfo=datetime.timezone.utc)
-    end_date = create_end_date(timeframe, start_date)
-    end_date = end_date.replace(tzinfo=datetime.timezone.utc)
+
+    b_utc = pd.to_datetime(start_date_string, utc=True)
+
+    a_start = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S")
+    a_utc = a_start.replace(tzinfo=datetime.timezone.utc)
+
+
+    start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc)
+    end_date = create_end_date(timeframe, start_date).replace(tzinfo=datetime.timezone.utc)
     start = int(start_date.timestamp())
     end = int(end_date.timestamp())
 

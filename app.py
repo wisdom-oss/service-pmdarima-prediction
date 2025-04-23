@@ -22,10 +22,13 @@ logging.basicConfig(
 def hello_world():
     return jsonify("Hello, World!")
 
-
-@app.route(f"{prefix}/meterInformation", methods=["GET"])
-def meterInformation():
+@app.route(f"{prefix}/meterNames", methods=["GET"])
+def requestMeterNames():
     return jsonify(transformer.get_meternames())
+
+@app.route(f"{prefix}/weatherCapabilities", methods=["GET"])
+def request_weather_capabilities():
+    return jsonify(transformer.get_weather_capabilities(True))
 
 
 @app.route(f"{prefix}/singleSmartmeter", methods=["POST"])
