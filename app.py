@@ -28,7 +28,8 @@ def requestMeterNames():
 
 @app.route(f"{prefix}/weatherCapabilities", methods=["GET"])
 def request_weather_capabilities():
-    return jsonify(transformer.get_weather_capabilities(True))
+    resp = jsonify(transformer.get_weather_capabilities(True))
+    return resp
 
 
 @app.route(f"{prefix}/singleSmartmeter", methods=["POST"])
@@ -80,4 +81,4 @@ def pred_from_model():
 
 
 if __name__ == "__main__":
-    app.run(port=8090, debug=True, use_reloader=False)
+    app.run(port=8090, debug=False, use_reloader=False)

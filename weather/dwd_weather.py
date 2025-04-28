@@ -9,7 +9,7 @@ def get_weather_capabilities(reqCols: bool) -> dict:
     :param reqCols: True when requesting all columns as well, false else
     :return: dict of weather capabilities
     """
-    response = requests.get(f"https://wisdom-demo.uol.de/api/dwd/00691")
+    response = requests.get(f"https://wisdom-demo.uol.de/api/dwd/v1/00691")
     data = response.json()
     capabilities = {}
 
@@ -50,11 +50,12 @@ def get_columns_of_weather(capabilities: dict) -> dict:
     unix_end = int(unix_start + 60)
 
     for capability in capabilities:
-        response = requests.get(f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={unix_start}&until={unix_end}")
+        response = requests.get(f"https://wisdom-demo.uol.de/api/dwd/v1/00691/{capability}/hourly?from={unix_start}&until={unix_end}")
         data = response.json()
 
         if data.get("timeseries") and isinstance(data["timeseries"], list):
             for column in data["timeseries"][0]:
+                logging.debug(f"{column} available")
                 capabilities[capability].append(column)
 
     return capabilities
