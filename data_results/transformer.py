@@ -22,6 +22,14 @@ def get_weather_capabilities(columns: bool) -> dict:
     """
     return dwd_weather.get_weather_capabilities(columns)
 
+def get_columns_of_capability(capability: str) -> dict:
+    """
+    request weather capabilities
+    :param columns: if true -> also columns, false else
+    :return: dict of weather capabilities
+    """
+    return dwd_weather.get_columns_of_capability(capability)
+
 def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> dict or None:
     """
     create a dict from parameters containing real values and datetimes

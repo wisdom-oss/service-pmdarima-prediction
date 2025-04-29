@@ -3,6 +3,7 @@ import pandas as pd
 import logging
 from pandas import json_normalize
 
+
 def get_weather_capabilities(reqCols: bool) -> dict:
     """
     return a list of all weather capabilities
@@ -39,6 +40,7 @@ def get_weather_capabilities(reqCols: bool) -> dict:
 
     return capabilities
 
+
 def get_columns_of_weather(capabilities: dict) -> dict:
     """
     request every column of every weather capability
@@ -50,7 +52,8 @@ def get_columns_of_weather(capabilities: dict) -> dict:
     unix_end = int(unix_start + 60)
 
     for capability in capabilities:
-        response = requests.get(f"https://wisdom-demo.uol.de/api/dwd/v1/00691/{capability}/hourly?from={unix_start}&until={unix_end}")
+        response = requests.get(
+            f"https://wisdom-demo.uol.de/api/dwd/v1/00691/{capability}/hourly?from={unix_start}&until={unix_end}")
         data = response.json()
 
         if data.get("timeseries") and isinstance(data["timeseries"], list):
@@ -59,6 +62,26 @@ def get_columns_of_weather(capabilities: dict) -> dict:
                 capabilities[capability].append(column)
 
     return capabilities
+
+
+def get_columns_of_capability(capability: str) -> dict:
+    MIN_DATE = pd.to_datetime("2021-05-26 00:00:00", utc=True)
+    unix_start = int(MIN_DATE.timestamp())
+    unix_end = int(unix_start + 60)
+
+    response = requests.get(
+        f"https://wisdom-demo.uol.de/api/dwd/v1/00691/{capability}/hourly?from={unix_start}&until={unix_end}")
+    data = response.json()
+
+    capability_dict = {"columns": []}
+
+    if data.get("timeseries") and isinstance(data["timeseries"], list):
+        for column in data["timeseries"][0]:
+            logging.debug(f"{column} available")
+            capability_dict["columns"].append(column)
+
+    return capability_dict
+
 
 def get_weather_data(capability: str, column: str, start, end) -> pd.DataFrame:
     """
@@ -88,6 +111,7 @@ def get_weather_data(capability: str, column: str, start, end) -> pd.DataFrame:
 
     return df[[column, "ts"]]
 
+
 def fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """
     create missing timestamps in weather data in between start and end date
@@ -113,6 +137,3 @@ def fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     df_filled[column_name] = df_filled[column_name].replace(-999, 0)
 
     return df_filled
-
-
-
