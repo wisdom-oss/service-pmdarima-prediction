@@ -31,6 +31,14 @@ def request_weather_capabilities():
     resp = jsonify(transformer.get_weather_capabilities(True))
     return resp
 
+@app.route(f"{prefix}/weatherColumn", methods=["POST"])
+def request_weather_column():
+
+    req = request.json["capability"]
+    data = transformer.get_columns_of_capability(req)
+    resp = jsonify(data)
+    return resp
+
 
 @app.route(f"{prefix}/singleSmartmeter", methods=["POST"])
 def single_smartmeter():
@@ -58,7 +66,7 @@ def train_model_on_smartmeter():
                                    request.json["resolution"],
                                    request.json["startpoint"],
                                    request.json["weatherCapability"],
-                                   request.json["columnName"]
+                                   request.json["weatherColumn"]
                                    )
     return jsonify(data)
 
@@ -75,7 +83,7 @@ def pred_from_model():
                                 request.json["resolution"],
                                 request.json["startpoint"],
                                 request.json["weatherCapability"],
-                                request.json["columnName"]
+                                request.json["weatherColumn"]
                                 )
     return jsonify(data)
 

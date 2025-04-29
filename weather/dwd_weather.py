@@ -77,6 +77,8 @@ def get_columns_of_capability(capability: str) -> dict:
 
     if data.get("timeseries") and isinstance(data["timeseries"], list):
         for column in data["timeseries"][0]:
+            if column == "ts":
+                continue
             logging.debug(f"{column} available")
             capability_dict["columns"].append(column)
 
