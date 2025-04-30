@@ -1,6 +1,7 @@
 import psycopg
 import os
 from dotenv import load_dotenv
+import logging
 
 
 def create_connection():
@@ -15,6 +16,8 @@ def create_connection():
                                       password=os.getenv("PW"),
                                       host=os.getenv("HOST"),
                                       port=os.getenv("PORT"))
+        if connection:
+            logging.debug(f"Database connection established")
         return connection
     except Exception as error:
         print(error)
