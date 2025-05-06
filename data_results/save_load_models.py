@@ -5,14 +5,18 @@ import os
 from dotenv import load_dotenv
 from root_file import ROOT_DIR
 
-def save_model_by_name(model, name:  str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str):
+
+def save_model_by_name(model, name: str, timeframe: str, resolution: str, start_point: str, capability: str,
+                       column_name: str):
     """
-    saves a trained arima model to a pickle file
-    :param model: trained model
-    :param name: name of smartmeter
-    :param timeframe: amount of days
-    :param resolution: resolution of labels
-    :return: none
+    :param model: model to save
+    :param name: name of model
+    :param timeframe: duration of time series data trained
+    :param resolution: resolution of time series data trained
+    :param start_point: start of time series
+    :param capability: weather capability to train
+    :param column_name: column name of the weather capability
+    :return: None
     """
     path = __create_path_to_file(name, timeframe, resolution, start_point, capability, column_name)
 
@@ -23,13 +27,17 @@ def save_model_by_name(model, name:  str, timeframe: str, resolution: str, start
     except Exception as e:
         logging.debug(f"Error during saving of {path}: {e}")
 
-def load_model_by_name(name:  str, timeframe: str, resolution: str,start_point: str, capability: str, column_name: str):
+
+def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str):
     """
-    method to save a created model to a pickle file, based on the parameters provided
-    :param name: name of the smartmeter
-    :param timeframe: amount of days
-    :param resolution: timely resolution
-    :return: loaded model
+    method to load a model by name and parameters
+    :param name: name of model
+    :param timeframe: duration of time series data trained
+    :param resolution: resolution of time series data trained
+    :param start_point: start of time series
+    :param capability: weather capability to train
+    :param column_name: column name of the weather capability
+    :return: None
     """
     path = __create_path_to_file(name, timeframe, resolution, start_point, capability, column_name)
 
@@ -40,7 +48,9 @@ def load_model_by_name(name:  str, timeframe: str, resolution: str,start_point: 
     except Exception as e:
         logging.debug(f"Loading {path} failed: {e}")
 
-def __create_path_to_file(name:  str, timeframe: str, resolution: str, startpoint: str, capability: str, column_name: str):
+
+def __create_path_to_file(name: str, timeframe: str, resolution: str, startpoint: str, capability: str,
+                          column_name: str):
     """
     helper function to create a unique name and keep it consistent throughout the project
     :param name: smartmeter name
@@ -49,7 +59,7 @@ def __create_path_to_file(name:  str, timeframe: str, resolution: str, startpoin
     :return: full name + path to folder
     """
 
-    identifier = f"{resolution}-{timeframe}-{name}-{startpoint}-{capability}-{column_name}.pkl".replace(":","_")
+    identifier = f"{resolution}-{timeframe}-{name}-{startpoint}-{capability}-{column_name}.pkl".replace(":", "_")
 
     load_dotenv()
     folder_path = f"{os.getenv("FILE_PATH_TRAINED_MODELS")}"
@@ -57,13 +67,16 @@ def __create_path_to_file(name:  str, timeframe: str, resolution: str, startpoin
 
     return full_path
 
-def has_duplicates(name:  str, timeframe: str, resolution: str, startpoint: str, capability: str, column_name: str):
+
+def has_duplicates(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str):
     """
     create a temp name and check if model already exists
-    :param startpoint:
-    :param name: smartmeter
-    :param timeframe: duration of days
-    :param resolution: timely resolution
+    :param name: name of model
+    :param timeframe: duration of time series data trained
+    :param resolution: resolution of time series data trained
+    :param start_point: start of time series
+    :param capability: weather capability to train
+    :param column_name: column name of the weather capability
     :return: True if duplicate, False else
     """
 
@@ -72,7 +85,7 @@ def has_duplicates(name:  str, timeframe: str, resolution: str, startpoint: str,
 
     # only perform duplicate check if env variable is False
     if not allow:
-        full_path = __create_path_to_file(name, timeframe, resolution, startpoint, capability, column_name)
+        full_path = __create_path_to_file(name, timeframe, resolution, start_point, capability, column_name)
         if os.path.exists(full_path):
             return True
         else:
@@ -80,9 +93,10 @@ def has_duplicates(name:  str, timeframe: str, resolution: str, startpoint: str,
     else:
         return False
 
-def save_results_to_json_file(meter_name, timeframe, resolution, startpoint, capability, column_name: str, json_data_object):
 
-    identifier = f"{resolution}-{timeframe}-{meter_name}-{startpoint}-{capability}-{column_name}".replace(":","_")
+def save_results_to_json_file(meter_name, timeframe, resolution, startpoint, capability, column_name: str,
+                              json_data_object):
+    identifier = f"{resolution}-{timeframe}-{meter_name}-{startpoint}-{capability}-{column_name}".replace(":", "_")
 
     load_dotenv()
     folder_path = os.path.join(ROOT_DIR, os.getenv("FILE_PATH_RESULTS"))
@@ -97,4 +111,3 @@ def save_results_to_json_file(meter_name, timeframe, resolution, startpoint, cap
             print(e)
     else:
         logging.debug(f"Results for {identifier} already exist. Skipping saving.")
-

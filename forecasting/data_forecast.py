@@ -9,7 +9,7 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
     :param model: the model to use
     :param exogenous_df: df containing all exogene variables to add to the prediction
     :param n_periods: number of periods (in hours) to predict into the future
-    :return: df of confidence intervalls
+    :return: df of confidence intervals
     lower and upper and pred_values
     """
 
@@ -22,8 +22,8 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
     predicted_values, conf_intervals = model.predict(
         n_periods=n_periods,
         X=exogenous_df,  # add exogenous variables when ready
-        return_conf_int=True, # return confidence intervalls
-        alpha=0.1 # confidence intervall of standard 95%
+        return_conf_int=True, # return confidence intervals
+        alpha=0.1 # confidence interval of standard 95%
     )
 
     # create dataframe from separate series

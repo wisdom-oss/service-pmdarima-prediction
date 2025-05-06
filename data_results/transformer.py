@@ -24,15 +24,15 @@ def get_weather_capabilities(columns: bool) -> dict:
 
 def get_columns_of_capability(capability: str) -> dict:
     """
-    request weather capabilities
-    :param columns: if true -> also columns, false else
-    :return: dict of weather capabilities
+    request columns of capability
+    :param capability: str repr of capability
+    :return: dict of columns
     """
     return dwd_weather.get_columns_of_capability(capability)
 
 def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> dict or None:
     """
-    create a dict from parameters containing real values and datetimes
+    create a dict from parameters containing real values and date times
     :param meter_name: name of selected smartmeter
     :param timeframe: timeframe of the request
     :param resolution: resolution of requested data
@@ -55,7 +55,7 @@ def create_end_date(timeframe: str, start_point: datetime) -> datetime:
     """
     private function to map the timeframe to an end date
     :param start_point: the date to start searching
-    :param timeframe: the time frame to search for (1 week, 1 month..)
+    :param timeframe: the time frame to search for (1 week, 1 month.)
     :return: the end date of the corresponding timeframe
     """
 
@@ -77,7 +77,7 @@ def create_end_date(timeframe: str, start_point: datetime) -> datetime:
             # CAUTION WHEN HAVING MORE DATA THAN 5 years!
             end = start_point + relativedelta(months=24)
 
-    # reduce end by 1 minute, because unix doesn't recognize lower timechanges
+    # reduce end by 1 minute, because unix doesn't recognize lower time changes
     # in order to invalidate the last entry,
     # so there are exactly 168 (observations + startpoint)
     end = end - datetime.timedelta(hours=1)
@@ -86,7 +86,7 @@ def create_end_date(timeframe: str, start_point: datetime) -> datetime:
 
 def train_model(meter_name: str, timeframe: str, resolution: str, start_date_string: str, weather_capability: str, column_name: str) -> dict or None:
     """
-    train a autoarima model based on parameters
+    train auto arima model based on parameters
     :param meter_name: name of smartmeter to train
     :param timeframe: amount of weeks
     :param resolution: data resolution
@@ -124,8 +124,8 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     :param timeframe: amount of weeks
     :param resolution: data resolution
     :param start_date: first date
-    :param weather_capability: from dwd
-    :param column_name: from dwd
+    :param weather_capability:
+    :param column_name:
     :return: json representation of metrics and parameters
     """
 

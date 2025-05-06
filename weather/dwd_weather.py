@@ -86,11 +86,11 @@ def get_columns_of_capability(capability: str) -> dict:
     return capability_dict
 
 
-def get_weather_data(capability: str, column: str, unix_start, unix_end) -> pd.DataFrame:
+def get_weather_data(capability: str, column: str, unix_start, unix_end) -> pd.DataFrame or None:
     """
     request weather data from dwd
-    :param start: start timestamp to search for
-    :param end: end timestamp to search for
+    :param unix_start: start timestamp to search for
+    :param unix_end: end timestamp to search for
     :param capability: kind of weather data to request
     :param column: column of capability to request
     """
@@ -133,7 +133,7 @@ def fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     # Merge the new date range with the original DataFrame
     df_filled = pd.merge(all_timestamps_df, df, on='ts', how='left')
 
-    # Backfill missing values (NaN)
+    # backfill missing values (NaN)
     df_filled = df_filled.bfill()
 
     # replaces every -999 as a statement for missing value with a 0 to not hinder prediction

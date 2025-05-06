@@ -23,7 +23,7 @@ def hello_world():
     return jsonify("Hello, World!")
 
 @app.route(f"{prefix}/meterNames", methods=["GET"])
-def requestMeterNames():
+def request_meter_names():
     return jsonify(transformer.get_meternames())
 
 @app.route(f"{prefix}/weatherCapabilities", methods=["GET"])

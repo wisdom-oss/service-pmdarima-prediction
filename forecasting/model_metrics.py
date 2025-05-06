@@ -8,9 +8,9 @@ def calculate_metrics(real_values, forecast_values):
     # BUG? Comparing real_values of the train set with predicted values of the test set?
     """
     compare values to determine either the model itself (compare real values test set vs forecast values)
-    or the predictive power (real values in 24h period vs predicted values 24h period.
+    or the predictive power real values in 24h period vs predicted values 24h period.
     :param real_values: values measured for smartmeter
-    :param forecast_values: predicted values of pmarima
+    :param forecast_values: predicted values of pmdarima
     :return: df with values
     """
     mae = mean_absolute_error(real_values, forecast_values)

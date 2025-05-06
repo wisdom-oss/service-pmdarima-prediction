@@ -22,7 +22,7 @@ def format_smartmeter_data():
 def read_smartmeter_data(metaCheck: bool):
     """
     read in the json data
-    :param metaCheck: if true, read in meta data
+    :param metaCheck: if true, read in metadata
     :return: df containing data
     """
 
