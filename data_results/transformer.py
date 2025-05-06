@@ -96,12 +96,6 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     :return: None
     """
 
-    b_utc = pd.to_datetime(start_date_string, utc=True)
-
-    a_start = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S")
-    a_utc = a_start.replace(tzinfo=datetime.timezone.utc)
-
-
     start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc)
     end_date = create_end_date(timeframe, start_date).replace(tzinfo=datetime.timezone.utc)
     start = int(start_date.timestamp())

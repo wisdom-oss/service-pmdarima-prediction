@@ -3,6 +3,7 @@ import pandas as pd
 import logging
 from pandas import json_normalize
 
+DWD_API = f"https://wisdom-demo.uol.de/api/dwd/v1/00691"
 
 def get_weather_capabilities(reqCols: bool) -> dict:
     """
@@ -10,7 +11,7 @@ def get_weather_capabilities(reqCols: bool) -> dict:
     :param reqCols: True when requesting all columns as well, false else
     :return: dict of weather capabilities
     """
-    response = requests.get(f"https://wisdom-demo.uol.de/api/dwd/v1/00691")
+    response = requests.get(DWD_API)
     data = response.json()
     capabilities = {}
 
@@ -53,7 +54,7 @@ def get_columns_of_weather(capabilities: dict) -> dict:
 
     for capability in capabilities:
         response = requests.get(
-            f"https://wisdom-demo.uol.de/api/dwd/v1/00691/{capability}/hourly?from={unix_start}&until={unix_end}")
+            DWD_API + f"/{capability}/hourly?from={unix_start}&until={unix_end}")
         data = response.json()
 
         if data.get("timeseries") and isinstance(data["timeseries"], list):
@@ -70,7 +71,7 @@ def get_columns_of_capability(capability: str) -> dict:
     unix_end = int(unix_start + 60)
 
     response = requests.get(
-        f"https://wisdom-demo.uol.de/api/dwd/v1/00691/{capability}/hourly?from={unix_start}&until={unix_end}")
+                    DWD_API + f"/{capability}/hourly?from={unix_start}&until={unix_end}")
     data = response.json()
 
     capability_dict = {"columns": []}
@@ -85,7 +86,7 @@ def get_columns_of_capability(capability: str) -> dict:
     return capability_dict
 
 
-def get_weather_data(capability: str, column: str, start, end) -> pd.DataFrame:
+def get_weather_data(capability: str, column: str, unix_start, unix_end) -> pd.DataFrame:
     """
     request weather data from dwd
     :param start: start timestamp to search for
@@ -100,7 +101,7 @@ def get_weather_data(capability: str, column: str, start, end) -> pd.DataFrame:
 
     try:
         response = requests.get(
-            f"https://wisdom-demo.uol.de/api/dwd/00691/{capability}/hourly?from={start}&until={end}"
+            DWD_API + f"/{capability}/hourly?from={unix_start}&until={unix_end}"
         )
         data = response.json()
 
