@@ -70,18 +70,23 @@ def get_columns_of_capability(capability: str) -> dict:
     unix_start = int(MIN_DATE.timestamp())
     unix_end = int(unix_start + 60)
 
-    response = requests.get(
-                    DWD_API + f"/{capability}/hourly?from={unix_start}&until={unix_end}")
-    data = response.json()
-
     capability_dict = {"columns": []}
 
-    if data.get("timeseries") and isinstance(data["timeseries"], list):
-        for column in data["timeseries"][0]:
-            if column == "ts":
-                continue
-            logging.debug(f"{column} available")
-            capability_dict["columns"].append(column)
+    if capability != "plain":
+
+        response = requests.get(
+                        DWD_API + f"/{capability}/hourly?from={unix_start}&until={unix_end}")
+        data = response.json()
+
+        if data.get("timeseries") and isinstance(data["timeseries"], list):
+            for column in data["timeseries"][0]:
+                if column == "ts":
+                    continue
+                logging.debug(f"{column} available")
+                capability_dict["columns"].append(column)
+
+    else:
+        capability_dict["columns"] = "Kein Wetterattribut ausgewählt"
 
     return capability_dict
 
