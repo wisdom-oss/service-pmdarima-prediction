@@ -18,6 +18,10 @@ def save_model_by_name(model, name: str, timeframe: str, resolution: str, start_
     :param column_name: column name of the weather capability
     :return: None
     """
+
+    if capability == "plain":
+        column_name = "no_column"
+
     path = __create_path_to_file(name, timeframe, resolution, start_point, capability, column_name)
 
     try:
@@ -39,6 +43,10 @@ def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: 
     :param column_name: column name of the weather capability
     :return: None
     """
+
+    if capability == "plain":
+        column_name = "no_column"
+
     path = __create_path_to_file(name, timeframe, resolution, start_point, capability, column_name)
 
     try:
@@ -59,7 +67,10 @@ def __create_path_to_file(name: str, timeframe: str, resolution: str, startpoint
     :return: full name + path to folder
     """
 
-    identifier = f"{resolution}-{timeframe}-{name}-{startpoint}-{capability}-{column_name}.pkl".replace(":", "_")
+    identifier = f"{resolution}-{timeframe}-{name}-{startpoint}-{capability}-{column_name}.pkl"
+    identifier = identifier.replace(" ","-")
+    #identifier = identifier.replace("_","-")
+    identifier = identifier.replace(":","-")
 
     load_dotenv()
     folder_path = f"{os.getenv("FILE_PATH_TRAINED_MODELS")}"

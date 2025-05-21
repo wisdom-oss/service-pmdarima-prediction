@@ -86,7 +86,7 @@ def get_columns_of_capability(capability: str) -> dict:
                 capability_dict["columns"].append(column)
 
     else:
-        capability_dict["columns"] = "Kein Wetterattribut ausgewählt"
+        capability_dict["columns"] = ["No Weather Attribute chosen"]
 
     return capability_dict
 

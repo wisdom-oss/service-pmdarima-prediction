@@ -1,8 +1,8 @@
 import pandas as pd
+import datetime
 
 from weather import dwd_weather
 from dateutil.relativedelta import relativedelta
-import datetime
 from database import data_selector as ds
 from forecasting import model_training, data_forecast, model_metrics
 from data_results import save_load_models
@@ -12,7 +12,16 @@ def get_meternames() -> dict or None:
     get all different smartmeter names
     :return: dict with list of names
     """
-    return ds.select_names()
+
+    query_dict = ds.select_names()
+
+    dict = {}
+
+    for item in query_dict["names"]:
+        dict[item] = f"{item.split("-")[0]} {item.split("-")[1]}"
+
+
+    return dict
 
 def get_weather_capabilities(columns: bool) -> dict:
     """
@@ -28,7 +37,15 @@ def get_columns_of_capability(capability: str) -> dict:
     :param capability: str repr of capability
     :return: dict of columns
     """
-    return dwd_weather.get_columns_of_capability(capability)
+
+    query_dict = dwd_weather.get_columns_of_capability(capability)
+
+    dict = {}
+
+    for item in query_dict["columns"]:
+        dict[item] = item
+
+    return dict
 
 def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> dict or None:
     """
@@ -106,7 +123,10 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
 
     weather_df = dwd_weather.get_weather_data(weather_capability, column_name, start, end)
 
-    model, train_time = model_training.train_model(df[["value"]], weather_df[[column_name]])
+    if weather_capability == "plain":
+        model, train_time = model_training.train_model(df[["value"]], None)
+    else:
+        model, train_time = model_training.train_model(df[["value"]], weather_df[[column_name]])
 
     model_dict = {
         "model": model,
@@ -139,7 +159,11 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     weather_df = dwd_weather.get_weather_data(weather_capability, column_name, int(forecast_labels[0].timestamp()), int(forecast_labels[-1].timestamp()))
 
     # use model and weather info to get predicted data
-    forecast_df = data_forecast.create_forecast_data(model_dict["model"], 24, weather_df[[column_name]])
+
+    if weather_capability == "plain":
+        forecast_df = data_forecast.create_forecast_data(model_dict["model"], 24, None)
+    else:
+        forecast_df = data_forecast.create_forecast_data(model_dict["model"], 24, weather_df[[column_name]])
 
     # select real values to compare with predicted data
     real_values = ds.select_date_value(meter_name, forecast_labels[0], forecast_labels[-1])["value"]
@@ -155,7 +179,7 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     data["name"] = f"{meter_name}"
     data["timeframe"] = f"{timeframe}"
     data["resolution"] = f"{resolution}"
-    data["dateObserved"] = forecast_labels
+    data["date"] = forecast_labels
     data["realValue"] = real_values
     data["aic"] = model_dict["model"].aic()
     data["fit_time"] = model_dict["training_time"]

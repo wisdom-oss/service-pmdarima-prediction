@@ -8,7 +8,7 @@ CORS(app)
 
 prefix = "/waterdemand"
 
-# loger setup
+# logger setup
 logging.basicConfig(
     # Capture all log levels from DEBUG and higher
     level=logging.DEBUG,
@@ -31,7 +31,7 @@ def request_weather_capabilities():
     resp = jsonify(transformer.get_weather_capabilities(True))
     return resp
 
-@app.route(f"{prefix}/weatherColumn", methods=["POST"])
+@app.route(f"{prefix}/weatherColumns", methods=["POST"])
 def request_weather_column():
 
     req = request.json["capability"]
@@ -68,7 +68,7 @@ def train_model_on_smartmeter():
                                    request.json["weatherCapability"],
                                    request.json["weatherColumn"]
                                    )
-    return jsonify(data)
+    return jsonify("Model saved")
 
 
 @app.route(f"{prefix}/loadModelAndPredict", methods=["POST"])
