@@ -1,9 +1,11 @@
+from typing import Optional
+
 import pandas as pd
 import logging
 
 from warnings import simplefilter
 
-def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
+def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame) -> pd.DataFrame:
     """
     using the sarimax model forecast data is being predicted
     :param model: the model to use
@@ -36,7 +38,14 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame):
     return df
 
 
-def create_forecast_labels(last_timestamp, n_periods: int, resolution: str) -> list or None:
+def create_forecast_labels(last_timestamp, n_periods: int, resolution: str) -> pd.DatetimeIndex or None:
+    """
+    create the label timestamps for the forecasted data
+    :param last_timestamp: last timestamp of the original data
+    :param n_periods: number of periods (in hours) to predict into the future
+    :param resolution: matched resolution
+    :return: future labels
+    """
 
     match resolution:
         case "hourly":
@@ -49,10 +58,10 @@ def create_forecast_labels(last_timestamp, n_periods: int, resolution: str) -> l
             time_unit, frequency = None, None
 
     # Generate future hourly timestamps
-    future_index = pd.date_range(
+    future_labels = pd.date_range(
         start=last_timestamp + pd.Timedelta(**{time_unit: 1}),  # Start from the next hour
         periods=n_periods,
         freq=frequency
     )
 
-    return future_index
+    return future_labels

@@ -1,9 +1,12 @@
 import requests
 import pandas as pd
 import logging
+import os
 from pandas import json_normalize
+from dotenv import load_dotenv
 
-DWD_API = f"https://wisdom-demo.uol.de/api/dwd/v1/00691"
+load_dotenv()
+DWD_API = os.getenv("DWD_API")
 
 def get_weather_capabilities(reqCols: bool) -> dict:
     """

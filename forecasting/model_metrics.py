@@ -4,7 +4,7 @@ import pandas as pd
 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-def calculate_metrics(real_values, forecast_values):
+def calculate_metrics(real_values, forecast_values) -> pd.DataFrame:
     # BUG? Comparing real_values of the train set with predicted values of the test set?
     """
     compare values to determine either the model itself (compare real values test set vs forecast values)

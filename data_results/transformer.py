@@ -5,9 +5,9 @@ from weather import dwd_weather
 from dateutil.relativedelta import relativedelta
 from database import data_selector as ds
 from forecasting import model_training, data_forecast, model_metrics
-from data_results import save_load_models
+from data_results import model_save_load
 
-def get_meternames() -> dict or None:
+def get_meter_names() -> dict or None:
     """
     get all different smartmeter names
     :return: dict with list of names
@@ -35,17 +35,17 @@ def get_columns_of_capability(capability: str) -> dict:
     """
     request columns of capability
     :param capability: str repr of capability
-    :return: dict of columns
+    :return: result_dict of columns
     """
 
     query_dict = dwd_weather.get_columns_of_capability(capability)
 
-    dict = {}
+    result_dict = {}
 
     for item in query_dict["columns"]:
-        dict[item] = item
+        result_dict[item] = item
 
-    return dict
+    return result_dict
 
 def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> dict or None:
     """
@@ -135,7 +135,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
         "end_date": end_date,
     }
 
-    save_load_models.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string, weather_capability, column_name)
+    model_save_load.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string, weather_capability, column_name)
 
 def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, weather_capability: str, column_name: str) -> dict or None:
     """
@@ -150,7 +150,7 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     """
 
     # load model by parameters
-    model_dict = save_load_models.load_model_by_name(meter_name, timeframe, resolution, start_date, weather_capability, column_name)
+    model_dict = model_save_load.load_model_by_name(meter_name, timeframe, resolution, start_date, weather_capability, column_name)
 
     # create 24 forecast label dates
     forecast_labels = data_forecast.create_forecast_labels(model_dict["end_date"],24, resolution)

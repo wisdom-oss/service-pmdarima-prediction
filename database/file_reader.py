@@ -4,8 +4,8 @@ from root_file import ROOT_DIR
 from dotenv import load_dotenv
 
 
-def format_smartmeter_data():
-    df = read_smartmeter_data(False)
+def format_smartmeter_data() -> pd.DataFrame:
+    df = __read_smartmeter_data(False)
 
     # filter out unnecessary columns
     df = df[["dateObserved", "refDevice", "numValue"]]
@@ -19,7 +19,7 @@ def format_smartmeter_data():
 
     return df
 
-def read_smartmeter_data(metaCheck: bool):
+def __read_smartmeter_data(metaCheck: bool) -> pd.DataFrame:
     """
     read in the json data
     :param metaCheck: if true, read in metadata
