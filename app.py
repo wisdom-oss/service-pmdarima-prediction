@@ -61,13 +61,14 @@ def train_model_on_smartmeter():
     :return: predicted values with conf_intervals
     """
 
-    data = transformer.train_model(request.json["name"],
-                                   request.json["timeframe"],
-                                   request.json["resolution"],
-                                   request.json["startpoint"],
-                                   request.json["weatherCapability"],
-                                   request.json["weatherColumn"]
-                                   )
+    transformer.train_model(request.json["name"],
+                            request.json["timeframe"],
+                            request.json["resolution"],
+                            request.json["startpoint"],
+                            request.json["weatherCapability"],
+                            request.json["weatherColumn"]
+                            )
+
     return jsonify("Model saved")
 
 
