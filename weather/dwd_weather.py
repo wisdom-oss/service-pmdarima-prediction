@@ -118,12 +118,12 @@ def get_weather_data(capability: str, column: str, unix_start, unix_end) -> pd.D
         logging.debug(f"DWD request failed, because: {e}")
 
     # fill data spots inside weather data to fill in missing timestamps
-    df = fill_missing_timestamps(df, column)
+    df = __fill_missing_timestamps(df, column)
 
     return df[[column, "ts"]]
 
 
-def fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+def __fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """
     create missing timestamps in weather data in between start and end date
     :param df: df of weather info
