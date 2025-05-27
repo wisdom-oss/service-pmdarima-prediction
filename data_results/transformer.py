@@ -121,11 +121,10 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     data = ds.select_date_value(meter_name, start_date, end_date)
     df = pd.DataFrame.from_dict(data)
 
-    weather_df = dwd_weather.get_weather_data(weather_capability, column_name, start, end)
-
     if weather_capability == "plain":
         model, train_time = model_training.train_model(df[["value"]], None)
     else:
+        weather_df = dwd_weather.get_weather_data(weather_capability, column_name, start, end)
         model, train_time = model_training.train_model(df[["value"]], weather_df[[column_name]])
 
     model_dict = {
@@ -155,14 +154,14 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     # create 24 forecast label dates
     forecast_labels = data_forecast.create_forecast_labels(model_dict["end_date"],24, resolution)
 
-    # use labels to get weather info
-    weather_df = dwd_weather.get_weather_data(weather_capability, column_name, int(forecast_labels[0].timestamp()), int(forecast_labels[-1].timestamp()))
-
     # use model and weather info to get predicted data
-
     if weather_capability == "plain":
         forecast_df = data_forecast.create_forecast_data(model_dict["model"], 24, None)
     else:
+        # use labels to get weather info
+        weather_df = dwd_weather.get_weather_data(weather_capability, column_name, int(forecast_labels[0].timestamp()),
+                                                  int(forecast_labels[-1].timestamp()))
+
         forecast_df = data_forecast.create_forecast_data(model_dict["model"], 24, weather_df[[column_name]])
 
     # select real values to compare with predicted data
