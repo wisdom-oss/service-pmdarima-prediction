@@ -5,7 +5,7 @@ import logging
 
 from warnings import simplefilter
 
-def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame) -> pd.DataFrame:
+def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame or None) -> pd.DataFrame:
     """
     using the sarimax model forecast data is being predicted
     :param model: the model to use

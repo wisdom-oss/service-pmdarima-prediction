@@ -7,7 +7,10 @@ from dotenv import load_dotenv
 
 def load_dwd_api():
     load_dotenv()
-    dwd_api = os.getenv("DWD_API")
+    dwd_api_raw = os.getenv("DWD_API_V1")
+    weather_station = os.getenv("WEATHER_STATION")
+
+    dwd_api = dwd_api_raw + weather_station
 
     if dwd_api is None:
         logging.debug("DWD_API not set in .env")
@@ -15,10 +18,10 @@ def load_dwd_api():
 
     return dwd_api
 
-def get_weather_capabilities(reqCols: bool) -> dict:
+def get_weather_capabilities(req_cols: bool) -> dict:
     """
     return a list of all weather capabilities
-    :param reqCols: True when requesting all columns as well, false else
+    :param req_cols: True when requesting all columns as well, false else
     :return: dict of weather capabilities
     """
     response = requests.get(DWD_API)
@@ -46,7 +49,7 @@ def get_weather_capabilities(reqCols: bool) -> dict:
         # add dict entries when requesting columns
         capabilities[entry["dataType"]] = []
 
-    if reqCols:
+    if req_cols:
         capabilities = get_columns_of_weather(capabilities)
 
     return capabilities

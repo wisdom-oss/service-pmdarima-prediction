@@ -5,7 +5,7 @@ from weather import dwd_weather
 from dateutil.relativedelta import relativedelta
 from database import data_selector as ds
 from forecasting import model_training, data_forecast, model_metrics
-from data_results import model_save_load
+from controller import model_handling
 
 def get_meter_names() -> dict or None:
     """
@@ -134,7 +134,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
         "end_date": end_date,
     }
 
-    model_save_load.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string, weather_capability, column_name)
+    model_handling.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string, weather_capability, column_name)
 
 def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, weather_capability: str, column_name: str) -> dict or None:
     """
@@ -149,7 +149,7 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     """
 
     # load model by parameters
-    model_dict = model_save_load.load_model_by_name(meter_name, timeframe, resolution, start_date, weather_capability, column_name)
+    model_dict = model_handling.load_model_by_name(meter_name, timeframe, resolution, start_date, weather_capability, column_name)
 
     # create 24 forecast label dates
     forecast_labels = data_forecast.create_forecast_labels(model_dict["end_date"],24, resolution)
