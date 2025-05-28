@@ -1,3 +1,8 @@
+
+## Connection to Database
+1. Credentials are secure, you can hook up your own database if wanted
+2. when using ours, vpn connection to UOL must be established
+
 ## Inserting Data
 
 1. Uncomment Instructions in data_inserter.py
