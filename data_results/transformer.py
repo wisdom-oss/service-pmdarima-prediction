@@ -1,6 +1,8 @@
 import pandas as pd
 import datetime
+import os
 
+from dotenv import load_dotenv
 from weather import dwd_weather
 from dateutil.relativedelta import relativedelta
 from database import data_selector as ds
@@ -61,6 +63,10 @@ def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_
 
     end_date = create_end_date(timeframe, start_date)
     data = ds.select_date_value(meter_name, start_date, end_date)
+
+    load_dotenv()
+    format = os.getenv("DATETIME_STANDARD_FORMAT")
+    data["date"] = [x.strftime(format) for x in data["date"]]
 
     data["name"] = f"{meter_name}"
     data["timeframe"] = f"{timeframe}"
@@ -171,7 +177,9 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     metrics_df = model_metrics.calculate_metrics(real_values, forecast_df["value"])
 
     # change labels to string repr
-    forecast_labels = [dt_index.strftime("%Y-%m-%dT%H:%M:%S") for dt_index in forecast_labels]
+    load_dotenv()
+    format = os.getenv("DATETIME_STANDARD_FORMAT")
+    forecast_labels = [dt_index.strftime(format) for dt_index in forecast_labels]
 
     # build dict data object
     data = forecast_df.to_dict(orient="list")

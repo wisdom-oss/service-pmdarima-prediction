@@ -4,7 +4,7 @@ from database import db_connector
 
 def query_fetch_one(query_string: str, params: list) -> dict or None:
     """
-    fetch_all function to use when querying data
+    fetch one function to use when querying data
     :param query_string: select string to use
     :param params: lst of parameters
     :return: dict of results or None if None
