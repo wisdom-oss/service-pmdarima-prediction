@@ -18,9 +18,11 @@ def create_connection() -> psycopg.connection or None:
                                       port=os.getenv("PORT"))
         if connection:
             logging.debug(f"Database connection established")
-        return connection
+            return connection
+        else:
+            logging.error(f"Database connection failed")
     except Exception as error:
-        logging.debug(error)
+        logging.debug(f"Connection not established, because of {error}")
         return None
 
 

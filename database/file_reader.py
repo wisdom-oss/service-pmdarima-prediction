@@ -19,7 +19,7 @@ def format_smartmeter_data() -> pd.DataFrame:
 
     return df
 
-def __read_smartmeter_data(metaCheck: bool) -> pd.DataFrame:
+def __read_smartmeter_data(meta_check: bool) -> pd.DataFrame:
     """
     read in the json data
     :param metaCheck: if true, read in metadata
@@ -30,7 +30,7 @@ def __read_smartmeter_data(metaCheck: bool) -> pd.DataFrame:
 
     abs_path = os.path.join(ROOT_DIR,
                             os.getenv("FILE_PATH_EXAMPLE_DATA"))
-    if metaCheck:
+    if meta_check:
         path = os.path.join(abs_path, os.getenv("EXAMPLE_META_DATA"))
     else:
         path = os.path.join(abs_path, os.getenv("EXAMPLE_DATA"))

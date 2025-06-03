@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from data_results import transformer
+from controller import service_controller
 import logging, sys
 
 app = Flask(__name__)
@@ -24,18 +24,18 @@ def hello_world():
 
 @app.route(f"{prefix}/meterNames", methods=["GET"])
 def request_meter_names():
-    return jsonify(transformer.get_meter_names())
+    return jsonify(service_controller.get_meter_names())
 
 @app.route(f"{prefix}/weatherCapabilities", methods=["GET"])
 def request_weather_capabilities():
-    resp = jsonify(transformer.get_weather_capabilities(True))
+    resp = jsonify(service_controller.get_weather_capabilities(True))
     return resp
 
 @app.route(f"{prefix}/weatherColumns", methods=["POST"])
 def request_weather_column():
 
     req = request.json["capability"]
-    data = transformer.get_columns_of_capability(req)
+    data = service_controller.get_columns_of_capability(req)
     resp = jsonify(data)
     return resp
 
@@ -46,11 +46,11 @@ def single_smartmeter():
     get data of a chosen smartmeter and chosen timely frame
     :return: amount of smartmeter data
     """
-    data = transformer.get_smartmeter_data(request.json["name"],
-                                           request.json["timeframe"],
-                                           request.json["resolution"],
-                                           request.json["startpoint"]
-                                           )
+    data = service_controller.get_smartmeter_data(request.json["name"],
+                                                  request.json["timeframe"],
+                                                  request.json["resolution"],
+                                                  request.json["startpoint"]
+                                                  )
     return jsonify(data)
 
 
@@ -61,13 +61,13 @@ def train_model_on_smartmeter():
     :return: predicted values with conf_intervals
     """
 
-    transformer.train_model(request.json["name"],
-                            request.json["timeframe"],
-                            request.json["resolution"],
-                            request.json["startpoint"],
-                            request.json["weatherCapability"],
-                            request.json["weatherColumn"]
-                            )
+    service_controller.train_model(request.json["name"],
+                                   request.json["timeframe"],
+                                   request.json["resolution"],
+                                   request.json["startpoint"],
+                                   request.json["weatherCapability"],
+                                   request.json["weatherColumn"]
+                                   )
 
     return jsonify("Model saved")
 
@@ -79,13 +79,13 @@ def pred_from_model():
     :return: predicted values with conf_intervals
     """
 
-    data = transformer.forecast(request.json["name"],
-                                request.json["timeframe"],
-                                request.json["resolution"],
-                                request.json["startpoint"],
-                                request.json["weatherCapability"],
-                                request.json["weatherColumn"]
-                                )
+    data = service_controller.forecast(request.json["name"],
+                                       request.json["timeframe"],
+                                       request.json["resolution"],
+                                       request.json["startpoint"],
+                                       request.json["weatherCapability"],
+                                       request.json["weatherColumn"]
+                                       )
     return jsonify(data)
 
 

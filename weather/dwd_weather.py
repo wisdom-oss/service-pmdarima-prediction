@@ -5,13 +5,23 @@ import os
 from pandas import json_normalize
 from dotenv import load_dotenv
 
-load_dotenv()
-DWD_API = os.getenv("DWD_API")
+def load_dwd_api():
+    load_dotenv()
+    dwd_api_raw = os.getenv("DWD_API_V1")
+    weather_station = os.getenv("WEATHER_STATION")
 
-def get_weather_capabilities(reqCols: bool) -> dict:
+    dwd_api = dwd_api_raw + weather_station
+
+    if dwd_api is None:
+        logging.debug("DWD_API not set in .env")
+        return None
+
+    return dwd_api
+
+def get_weather_capabilities(req_cols: bool) -> dict:
     """
     return a list of all weather capabilities
-    :param reqCols: True when requesting all columns as well, false else
+    :param req_cols: True when requesting all columns as well, false else
     :return: dict of weather capabilities
     """
     response = requests.get(DWD_API)
@@ -39,7 +49,7 @@ def get_weather_capabilities(reqCols: bool) -> dict:
         # add dict entries when requesting columns
         capabilities[entry["dataType"]] = []
 
-    if reqCols:
+    if req_cols:
         capabilities = get_columns_of_weather(capabilities)
 
     return capabilities
@@ -148,3 +158,5 @@ def __fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFram
     df_filled[column_name] = df_filled[column_name].replace(-999, 0)
 
     return df_filled
+
+DWD_API = load_dwd_api()
