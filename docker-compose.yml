@@ -1,6 +1,6 @@
 services:
   water_demand_prediction:
-    image: training_wdp:0.8
+    image: image_wdp
     mem_limit: "55g" # dein container darf maximal 55 GB RAM nutzen
     mem_reservation: "50g" # dein container sollte maximal 50GB RAM nutzen
     memswap_limit: -1  # dein container darf unbegrenzt swap nutzen (33GiB)
@@ -10,16 +10,17 @@ services:
         max-size: "10m"
         max-file: "3"
     build: .
-    container_name: training_wdp
+    container_name: container_wdp
     volumes:
       # Bind Data from outside the container to the container
-      - "/home/jstueven/files:/service-water-demand-prediction/files/smartmeterdata"
+      # - "../enviro_test/.env:/service-water-demand-prediction/.env:ro"
+      - "./.env:/service-water-demand-prediction/.env:ro"
 
       # Mount a volume to access trained models after container deletion
       - models_volume:/service-water-demand-prediction/files/trained_models
       - results_volume:/service-water-demand-prediction/files/results
     ports:
-      - "9120:8080"
+      - "9120:8090"
     networks:
       - flask-network
 volumes:

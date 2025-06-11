@@ -9,10 +9,10 @@ COPY requirements.txt /service-water-demand-prediction/
 
 # Install updates
 RUN apt-get update
-RUN pip install --upgrade pip
+RUN apt-get install
 
-# Install dependencies
-RUN pip install -r requirements.txt
+# upgrade pip and install requirements
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # installation over standard not working (may over requirements)
 # pip install "psycopg[binary]"
@@ -21,15 +21,9 @@ RUN pip install -r requirements.txt
 COPY . /service-water-demand-prediction/
 
 # setting up ENV variables
-ENV ALLOW_DUPLICATE_MODELS=True
-ENV DEVICE_PREFIX=urn:ngsi-ld:Device:
-ENV STARTING_DATE_SMARTMETER=2021-05-26T00:00:00
-ENV FILE_PATH_TRAINED_MODELS=files/trained_models/
-ENV FILE_PATH_EXAMPLE_DATA=files/smartmeterdata/
-ENV FILE_PATH_RESULTS=files/results/
-ENV EXAMPLE_META_DATA=example_pm_meta.json
-ENV EXAMPLE_DATA=example_pm_measurements.json
-ENV DATETIME_STANDARD_FORMAT="%d.%m.%y %H:%M"
+ENV FLASK_APP=app.py
+ENV DWD_API_V1=https://wisdom-demo.uol.de/api/dwd/v1
+ENV WEATHER_STATION=/00691
 
-EXPOSE 8080
-CMD ["flask", "run", "--host=0.0.0.0", "--port=8080"]
+EXPOSE 8090
+CMD ["flask", "run", "--host=0.0.0.0", "--port=8090"]

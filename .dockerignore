@@ -10,22 +10,22 @@ venv/
 
 /.idea
 
-
 # Git
 .git
 .gitignore
 .gitattributes
-
-# CI
-.codeclimate.yml
-.travis.yml
-.taskcluster.yml
 
 # Docker
 docker-compose.yml
 Dockerfile
 .docker
 .dockerignore
+
+
+# CI
+.codeclimate.yml
+.travis.yml
+.taskcluster.yml
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
