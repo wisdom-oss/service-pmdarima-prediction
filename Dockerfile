@@ -22,8 +22,6 @@ COPY . /service-water-demand-prediction/
 
 # setting up ENV variables
 ENV FLASK_APP=app.py
-ENV DWD_API_V1=https://wisdom-demo.uol.de/api/dwd/v1
-ENV WEATHER_STATION=/00691
 
 EXPOSE 8090
 CMD ["flask", "run", "--host=0.0.0.0", "--port=8090"]

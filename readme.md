@@ -1,3 +1,6 @@
+## Python Version
+Use Python Interpreter 3.12.9 at most in order to use pmdarima
+
 
 ## Connection to Database
 1. Credentials are secure, you can hook up your own database if wanted
