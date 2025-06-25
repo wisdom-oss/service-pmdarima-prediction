@@ -13,7 +13,7 @@ services:
     container_name: container_wdp
     volumes:
       # Bind Data from outside the container to the container
-      # - "../enviro_test/.env:/service-water-demand-prediction/.env:ro"
+      # - "../environment/.env:/service-water-demand-prediction/.env:ro"
       - "./.env:/service-water-demand-prediction/.env:ro"
 
       # Mount a volume to access trained models after container deletion
