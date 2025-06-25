@@ -88,6 +88,5 @@ def pred_from_model():
                                        )
     return jsonify(data)
 
-
 if __name__ == "__main__":
-    app.run(port=8090, debug=False, use_reloader=False)
+    app.run(host="0.0.0.0",port=8090, debug=False, use_reloader=False)
