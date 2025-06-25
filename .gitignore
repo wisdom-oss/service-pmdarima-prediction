@@ -1,10 +1,18 @@
 # Files
 /files/smartmeterdata/*
-/files/backup_models/*
 /files/trained_models/*
 /files/results/*
-/files/new_models/*
 /.idea
+.idea
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -110,15 +118,6 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
-
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
 
 # Spyder project settings
 .spyderproject

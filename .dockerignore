@@ -2,13 +2,18 @@
 /files/smartmeterdata/*
 /files/trained_models/*
 /files/results/*
-
-# Virtual environment
-.env
-.venv/
-venv/
-
 /.idea
+.idea
+
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Git
 .git
@@ -36,7 +41,6 @@ Dockerfile
 
 # Distribution / packaging
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -81,9 +85,6 @@ docs/_build/
 
 # PyBuilder
 target/
-
-# PyCharm
-.idea
 
 # Python mode for VIM
 .ropeproject
