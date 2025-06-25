@@ -5,20 +5,22 @@ import os
 from pandas import json_normalize
 from dotenv import load_dotenv
 
-def load_dwd_api():
+
+def load_dwd_api() -> str | None:
     load_dotenv()
     dwd_api_raw = os.getenv("DWD_API_V1")
     weather_station = os.getenv("WEATHER_STATION")
 
-    dwd_api = dwd_api_raw + weather_station
-
-    if dwd_api is None:
+    if not dwd_api_raw or not weather_station:
         logging.debug("DWD_API not set in .env")
-        return None
+        raise TypeError("DWD_API_V1 or WEATHER_STATION env variables not set")
+
+    dwd_api = dwd_api_raw + weather_station
 
     return dwd_api
 
-def get_weather_capabilities(req_cols: bool) -> dict:
+
+def get_weather_capabilities(req_cols: bool) -> dict[str, list[str]]:
     """
     return a list of all weather capabilities
     :param req_cols: True when requesting all columns as well, false else
@@ -55,7 +57,7 @@ def get_weather_capabilities(req_cols: bool) -> dict:
     return capabilities
 
 
-def get_columns_of_weather(capabilities: dict) -> dict:
+def get_columns_of_weather(capabilities: dict) -> dict[str, list[str]]:
     """
     request every column of every weather capability
     :param capabilities: dict of capabilities
@@ -88,7 +90,7 @@ def get_columns_of_capability(capability: str) -> dict:
     if capability != "plain":
 
         response = requests.get(
-                        DWD_API + f"/{capability}/hourly?from={unix_start}&until={unix_end}")
+            DWD_API + f"/{capability}/hourly?from={unix_start}&until={unix_end}")
         data = response.json()
 
         if data.get("timeseries") and isinstance(data["timeseries"], list):
@@ -104,7 +106,7 @@ def get_columns_of_capability(capability: str) -> dict:
     return capability_dict
 
 
-def get_weather_data(capability: str, column: str, unix_start, unix_end) -> pd.DataFrame or None:
+def get_weather_data(capability: str, column: str, unix_start: int, unix_end: float) -> pd.DataFrame or None:
     """
     request weather data from dwd
     :param unix_start: start timestamp to search for
@@ -159,4 +161,5 @@ def __fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFram
 
     return df_filled
 
-DWD_API = load_dwd_api()
+
+DWD_API: str = load_dwd_api()

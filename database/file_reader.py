@@ -28,8 +28,7 @@ def __read_smartmeter_data(meta_check: bool) -> pd.DataFrame:
 
     load_dotenv()
 
-    abs_path = os.path.join(ROOT_DIR,
-                            os.getenv("FILE_PATH_EXAMPLE_DATA"))
+    abs_path = os.path.join(ROOT_DIR, os.getenv("FILE_PATH_EXAMPLE_DATA"))
     if meta_check:
         path = os.path.join(abs_path, os.getenv("EXAMPLE_META_DATA"))
     else:

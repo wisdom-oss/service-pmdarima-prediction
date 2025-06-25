@@ -25,7 +25,7 @@ def get_meter_names() -> dict | None:
 
     return dict
 
-def get_weather_capabilities(columns: bool) -> dict:
+def get_weather_capabilities(columns: bool) -> dict[str,list[str]]:
     """
     request weather capabilities
     :param columns: if true -> also columns, false else
@@ -33,7 +33,7 @@ def get_weather_capabilities(columns: bool) -> dict:
     """
     return dwd_weather.get_weather_capabilities(columns)
 
-def get_columns_of_capability(capability: str) -> dict:
+def get_columns_of_capability(capability: str) -> dict[str,list[str]]:
     """
     request columns of capability
     :param capability: str repr of capability

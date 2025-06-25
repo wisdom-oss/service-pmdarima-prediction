@@ -2,7 +2,7 @@ import psycopg
 from dotenv import load_dotenv
 from database import db_connector
 
-def query_fetch_one(query_string: str, params: list) -> dict or None:
+def query_fetch_one(query_string: str, params: list) -> dict | None:
     """
     fetch one function to use when querying data
     :param query_string: select string to use
@@ -16,7 +16,7 @@ def query_fetch_one(query_string: str, params: list) -> dict or None:
             result = cursor.fetchone()
             return result
 
-def select_date_value(meter_name: str, start, end) -> dict or None:
+def select_date_value(meter_name: str, start, end) -> dict | None:
     """
     request data from db
     :param meter_name: name of smartmeter
@@ -29,7 +29,7 @@ def select_date_value(meter_name: str, start, end) -> dict or None:
 
     return query_fetch_one(query_string, [meter_name, start, end])
 
-def select_names() -> dict or None:
+def select_names() -> dict | None:
     """
     request names of data from db, based on first timestamp (currently)
     :return: dict of names

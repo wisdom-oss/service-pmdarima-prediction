@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import logging
 
 
-def create_connection() -> psycopg.connection or None:
+def create_connection() -> psycopg.connection:
     """
     create a database connection to a Postgres database
     :return: connection object
@@ -23,6 +23,6 @@ def create_connection() -> psycopg.connection or None:
             logging.error(f"Database connection failed")
     except Exception as error:
         logging.debug(f"Connection not established, because of {error}")
-        return None
+        raise Exception(f"Database connection failed")
 
 
