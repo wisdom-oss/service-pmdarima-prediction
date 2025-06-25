@@ -1,11 +1,8 @@
-from typing import Optional
-
 import pandas as pd
 import logging
-
 from warnings import simplefilter
 
-def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame or None) -> pd.DataFrame:
+def create_forecast_data(model: dict, n_periods: int, exogenous_df: pd.DataFrame or None) -> pd.DataFrame:
     """
     using the sarimax model forecast data is being predicted
     :param model: the model to use
@@ -38,7 +35,7 @@ def create_forecast_data(model, n_periods: int, exogenous_df: pd.DataFrame or No
     return df
 
 
-def create_forecast_labels(last_timestamp, n_periods: int, resolution: str) -> pd.DatetimeIndex or None:
+def create_forecast_labels(last_timestamp: str, n_periods: int, resolution: str) -> pd.DatetimeIndex or None:
     """
     create the label timestamps for the forecasted data
     :param last_timestamp: last timestamp of the original data

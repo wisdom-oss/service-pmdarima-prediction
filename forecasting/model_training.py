@@ -7,7 +7,7 @@ import pandas as pd
 
 from warnings import simplefilter
 
-def train_model(df: pd.DataFrame, weather_df: pd.DataFrame or None) -> tuple[Any, float]:
+def train_model(df: pd.DataFrame, weather_df: pd.DataFrame | None) -> tuple[Any, float]:
     """
     train a model based on the data and exogen weather data
     :param df: smartmeter data

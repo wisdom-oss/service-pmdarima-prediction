@@ -9,7 +9,7 @@ from database import data_selector as ds
 from forecasting import model_training, data_forecast, model_metrics
 from controller import model_handling
 
-def get_meter_names() -> dict or None:
+def get_meter_names() -> dict | None:
     """
     get all different smartmeter names
     :return: dict with list of names

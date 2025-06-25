@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from root_file import ROOT_DIR
 
 
-def save_model_by_name(model, name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> None:
+def save_model_by_name(model: dict, name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> None:
     """
     :param model: model to save
     :param name: name of model
@@ -28,7 +28,7 @@ def save_model_by_name(model, name: str, timeframe: str, resolution: str, start_
         logging.debug(f"Error during saving of {path}: {e}")
 
 
-def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> dict[str, Any] or None:
+def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> dict[str, Any] | None:
     """
     method to load a model by name and parameters
     :param name: name of model
@@ -40,7 +40,12 @@ def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: 
     :return: None
     """
 
+
     path = __create_file_path(name, timeframe, resolution, start_point, capability, column_name)
+
+    if path is None:
+        logging.debug(f"Created Path is None")
+        raise TypeError(f"Created Path is None")
 
     try:
         # Load the model up, create predictions
@@ -48,9 +53,10 @@ def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: 
         return data
     except Exception as e:
         logging.debug(f"Loading {path} failed: {e}")
+        return None
 
 
-def __create_file_path(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> str or None:
+def __create_file_path(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> str | None:
     """
     create a unique file name which is used to save and retrieve trained model data by name
     :param name: smartmeter name
