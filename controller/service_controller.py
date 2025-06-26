@@ -9,7 +9,18 @@ from database import data_selector as ds
 from forecasting import model_training, data_forecast, model_metrics
 from controller import model_handling
 
-def get_meter_names() -> dict | None:
+from typing import TypedDict
+
+
+class SmartmeterData(TypedDict):
+    date: list[str]
+    name: str
+    resolution: str
+    timeframe: str
+    value: list[float]
+
+
+def get_meter_names() -> dict[str, str] | None:
     """
     get all different smartmeter names
     
@@ -23,10 +34,10 @@ def get_meter_names() -> dict | None:
     for item in query_dict["names"]:
         dict[item] = f"{item.split("-")[0]} {item.split("-")[1]}"
 
-
     return dict
 
-def get_weather_capabilities(columns: bool) -> dict[str,list[str]]:
+
+def get_weather_capabilities(columns: bool) -> dict[str, list[str]]:
     """
     request weather capabilities
     
@@ -35,7 +46,8 @@ def get_weather_capabilities(columns: bool) -> dict[str,list[str]]:
     """
     return dwd_weather.get_weather_capabilities(columns)
 
-def get_columns_of_capability(capability: str) -> dict[str,list[str]]:
+
+def get_columns_of_capability(capability: str) -> dict[str, list[str]]:
     """
     request columns of capability
     
@@ -52,7 +64,8 @@ def get_columns_of_capability(capability: str) -> dict[str,list[str]]:
 
     return result_dict
 
-def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> dict or None:
+
+def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> SmartmeterData or None:
     """
     create a dict from parameters containing real values and date times
     
@@ -78,7 +91,8 @@ def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_
 
     return data
 
-def create_end_date(timeframe: str, start_point: datetime) -> datetime:
+
+def create_end_date(timeframe: str, start_point: datetime) -> str:
     """
     private function to map the timeframe to an end date
     :param start_point: the date to start searching
@@ -111,7 +125,9 @@ def create_end_date(timeframe: str, start_point: datetime) -> datetime:
 
     return end
 
-def train_model(meter_name: str, timeframe: str, resolution: str, start_date_string: str, weather_capability: str, column_name: str) -> dict or None:
+
+def train_model(meter_name: str, timeframe: str, resolution: str, start_date_string: str, weather_capability: str,
+                column_name: str) -> dict or None:
     """
     train auto arima model based on parameters
     
@@ -124,7 +140,8 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     :return: None
     """
 
-    start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S").replace(tzinfo=datetime.timezone.utc)
+    start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S").replace(
+        tzinfo=datetime.timezone.utc)
     end_date = create_end_date(timeframe, start_date).replace(tzinfo=datetime.timezone.utc)
     start = int(start_date.timestamp())
     end = int(end_date.timestamp())
@@ -145,9 +162,12 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
         "end_date": end_date,
     }
 
-    model_handling.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string, weather_capability, column_name)
+    model_handling.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string,
+                                      weather_capability, column_name)
 
-def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, weather_capability: str, column_name: str) -> dict or None:
+
+def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, weather_capability: str,
+             column_name: str) -> dict or None:
     """
     predict data based on parameters
     
@@ -161,10 +181,11 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     """
 
     # load model by parameters
-    model_dict = model_handling.load_model_by_name(meter_name, timeframe, resolution, start_date, weather_capability, column_name)
+    model_dict = model_handling.load_model_by_name(meter_name, timeframe, resolution, start_date, weather_capability,
+                                                   column_name)
 
     # create 24 forecast label dates
-    forecast_labels = data_forecast.create_forecast_labels(model_dict["end_date"],24, resolution)
+    forecast_labels = data_forecast.create_forecast_labels(model_dict["end_date"], 24, resolution)
 
     # use model and weather info to get predicted data
     if weather_capability == "plain":
@@ -202,6 +223,3 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     data["r2"] = metrics_df["R2"][0]
 
     return data
-
-
-

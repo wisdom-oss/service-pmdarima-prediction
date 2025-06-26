@@ -20,6 +20,9 @@ def save_model_by_name(model: dict, name: str, timeframe: str, resolution: str, 
 
     path = __create_file_path(name, timeframe, resolution, start_point, capability, column_name)
 
+    if path is None:
+        raise TypeError("Path cannot be None")
+
     try:
         # Pickle it
         joblib.dump(model, path, compress=3)
