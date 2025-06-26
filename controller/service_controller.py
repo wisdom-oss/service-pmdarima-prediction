@@ -12,6 +12,7 @@ from controller import model_handling
 def get_meter_names() -> dict | None:
     """
     get all different smartmeter names
+    
     :return: dict with list of names
     """
 
@@ -28,6 +29,7 @@ def get_meter_names() -> dict | None:
 def get_weather_capabilities(columns: bool) -> dict[str,list[str]]:
     """
     request weather capabilities
+    
     :param columns: if true -> also columns, false else
     :return: dict of weather capabilities
     """
@@ -36,6 +38,7 @@ def get_weather_capabilities(columns: bool) -> dict[str,list[str]]:
 def get_columns_of_capability(capability: str) -> dict[str,list[str]]:
     """
     request columns of capability
+    
     :param capability: str repr of capability
     :return: result_dict of columns
     """
@@ -52,6 +55,7 @@ def get_columns_of_capability(capability: str) -> dict[str,list[str]]:
 def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> dict or None:
     """
     create a dict from parameters containing real values and date times
+    
     :param meter_name: name of selected smartmeter
     :param timeframe: timeframe of the request
     :param resolution: resolution of requested data
@@ -110,6 +114,7 @@ def create_end_date(timeframe: str, start_point: datetime) -> datetime:
 def train_model(meter_name: str, timeframe: str, resolution: str, start_date_string: str, weather_capability: str, column_name: str) -> dict or None:
     """
     train auto arima model based on parameters
+    
     :param meter_name: name of smartmeter to train
     :param timeframe: amount of weeks
     :param resolution: data resolution
@@ -145,6 +150,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
 def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, weather_capability: str, column_name: str) -> dict or None:
     """
     predict data based on parameters
+    
     :param meter_name: name of smartmeter
     :param timeframe: amount of weeks
     :param resolution: data resolution

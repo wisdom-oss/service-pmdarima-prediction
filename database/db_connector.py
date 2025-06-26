@@ -7,6 +7,7 @@ import logging
 def create_connection() -> psycopg.connection:
     """
     create a database connection to a Postgres database
+    
     :return: connection object
     """
     try:

@@ -5,6 +5,7 @@ from warnings import simplefilter
 def create_forecast_data(model: dict, n_periods: int, exogenous_df: pd.DataFrame or None) -> pd.DataFrame:
     """
     using the sarimax model forecast data is being predicted
+    
     :param model: the model to use
     :param exogenous_df: df containing all exogene variables to add to the prediction
     :param n_periods: number of periods (in hours) to predict into the future
@@ -35,9 +36,10 @@ def create_forecast_data(model: dict, n_periods: int, exogenous_df: pd.DataFrame
     return df
 
 
-def create_forecast_labels(last_timestamp: str, n_periods: int, resolution: str) -> pd.DatetimeIndex or None:
+def create_forecast_labels(last_timestamp: str, n_periods: int, resolution: str) -> pd.DatetimeIndex | None:
     """
     create the label timestamps for the forecasted data
+    
     :param last_timestamp: last timestamp of the original data
     :param n_periods: number of periods (in hours) to predict into the future
     :param resolution: matched resolution

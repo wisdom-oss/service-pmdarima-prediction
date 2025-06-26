@@ -23,6 +23,7 @@ def load_dwd_api() -> str | None:
 def get_weather_capabilities(req_cols: bool) -> dict[str, list[str]]:
     """
     return a list of all weather capabilities
+    
     :param req_cols: True when requesting all columns as well, false else
     :return: dict of weather capabilities
     """
@@ -60,6 +61,7 @@ def get_weather_capabilities(req_cols: bool) -> dict[str, list[str]]:
 def get_columns_of_weather(capabilities: dict) -> dict[str, list[str]]:
     """
     request every column of every weather capability
+    
     :param capabilities: dict of capabilities
     :return: dict of capabilities with column entries
     """
@@ -106,9 +108,10 @@ def get_columns_of_capability(capability: str) -> dict:
     return capability_dict
 
 
-def get_weather_data(capability: str, column: str, unix_start: int, unix_end: float) -> pd.DataFrame or None:
+def get_weather_data(capability: str, column: str, unix_start: int, unix_end: float) -> pd.DataFrame | None:
     """
     request weather data from dwd
+    
     :param unix_start: start timestamp to search for
     :param unix_end: end timestamp to search for
     :param capability: kind of weather data to request
@@ -138,6 +141,7 @@ def get_weather_data(capability: str, column: str, unix_start: int, unix_end: fl
 def __fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     """
     create missing timestamps in weather data in between start and end date
+    
     :param df: df of weather info
     :param column_name: column to check for missing data
     :return:
@@ -162,4 +166,4 @@ def __fill_missing_timestamps(df: pd.DataFrame, column_name: str) -> pd.DataFram
     return df_filled
 
 
-DWD_API: str = load_dwd_api()
+DWD_API: str|None = load_dwd_api()

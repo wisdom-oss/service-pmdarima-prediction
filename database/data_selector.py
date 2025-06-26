@@ -19,6 +19,7 @@ def query_fetch_one(query_string: str, params: list) -> dict | None:
 def select_date_value(meter_name: str, start, end) -> dict | None:
     """
     request data from db
+    
     :param meter_name: name of smartmeter
     :param start: unix time of first record
     :param end: unix time of last record
@@ -32,6 +33,7 @@ def select_date_value(meter_name: str, start, end) -> dict | None:
 def select_names() -> dict | None:
     """
     request names of data from db, based on first timestamp (currently)
+    
     :return: dict of names
     """
     search_date = "2021-05-26 00:00:00"

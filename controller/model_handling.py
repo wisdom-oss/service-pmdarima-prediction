@@ -31,6 +31,7 @@ def save_model_by_name(model: dict, name: str, timeframe: str, resolution: str, 
 def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> dict[str, Any] | None:
     """
     method to load a model by name and parameters
+
     :param name: name of model
     :param timeframe: duration of time series data trained
     :param resolution: resolution of time series data trained
@@ -59,6 +60,7 @@ def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: 
 def __create_file_path(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> str | None:
     """
     create a unique file name which is used to save and retrieve trained model data by name
+
     :param name: smartmeter name
     :param timeframe: duration of timesries
     :param resolution: resolution of timesries
@@ -88,6 +90,7 @@ def __create_file_path(name: str, timeframe: str, resolution: str, start_point: 
 def __has_duplicates(full_path: str) -> bool:
     """
     create a temp name and check if model already exists
+    
     :param file_name: name of file to test
     :return: True if duplicate, False else
     """
