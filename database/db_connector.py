@@ -1,10 +1,11 @@
 import psycopg
+from psycopg import Connection
 import os
 from dotenv import load_dotenv
 import logging
 
 
-def create_connection() -> psycopg.connection:
+def create_connection() -> Connection:
     """
     create a database connection to a Postgres database
     

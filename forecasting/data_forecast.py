@@ -1,8 +1,9 @@
 import pandas as pd
 import logging
 from warnings import simplefilter
+from pmdarima import ARIMA
 
-def create_forecast_data(model: dict, n_periods: int, exogenous_df: pd.DataFrame or None) -> pd.DataFrame:
+def create_forecast_data(model: ARIMA, n_periods: int, exogenous_df: pd.DataFrame | None) -> pd.DataFrame:
     """
     using the sarimax model forecast data is being predicted
     

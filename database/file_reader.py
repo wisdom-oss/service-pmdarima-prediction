@@ -28,12 +28,15 @@ def __read_smartmeter_data(meta_check: bool) -> pd.DataFrame:
     """
 
     load_dotenv()
+    file_path_ex_data = os.getenv("FILE_PATH_EXAMPLE_DATA")
 
-    abs_path = os.path.join(ROOT_DIR, os.getenv("FILE_PATH_EXAMPLE_DATA"))
+    abs_path = os.path.join(ROOT_DIR, file_path_ex_data)
     if meta_check:
-        path = os.path.join(abs_path, os.getenv("EXAMPLE_META_DATA"))
+        example_meta = os.getenv("EXAMPLE_META_DATA")
+        path = os.path.join(abs_path,example_meta)
     else:
-        path = os.path.join(abs_path, os.getenv("EXAMPLE_DATA"))
+        example_data = os.getenv("EXAMPLE_DATA")
+        path = os.path.join(abs_path, example_data)
 
     df = pd.read_json(path)
 

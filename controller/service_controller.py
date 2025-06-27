@@ -8,16 +8,7 @@ from dateutil.relativedelta import relativedelta
 from database import data_selector as ds
 from forecasting import model_training, data_forecast, model_metrics
 from controller import model_handling
-
-from typing import TypedDict
-
-
-class SmartmeterData(TypedDict):
-    date: list[str]
-    name: str
-    resolution: str
-    timeframe: str
-    value: list[float]
+import interfaces
 
 
 def get_meter_names() -> dict[str, str] | None:
@@ -65,7 +56,7 @@ def get_columns_of_capability(capability: str) -> dict[str, list[str]]:
     return result_dict
 
 
-def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> SmartmeterData or None:
+def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_date: str) -> interfaces.SmartmeterData | None:
     """
     create a dict from parameters containing real values and date times
     
@@ -127,7 +118,7 @@ def create_end_date(timeframe: str, start_point: datetime) -> str:
 
 
 def train_model(meter_name: str, timeframe: str, resolution: str, start_date_string: str, weather_capability: str,
-                column_name: str) -> dict or None:
+                column_name: str):
     """
     train auto arima model based on parameters
     
@@ -167,7 +158,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
 
 
 def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, weather_capability: str,
-             column_name: str) -> dict or None:
+             column_name: str) -> interfaces.ForecastData | None:
     """
     predict data based on parameters
     

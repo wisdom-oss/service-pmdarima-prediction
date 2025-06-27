@@ -58,7 +58,7 @@ def get_weather_capabilities(req_cols: bool) -> dict[str, list[str]]:
     return capabilities
 
 
-def get_columns_of_weather(capabilities: dict) -> dict[str, list[str]]:
+def get_columns_of_weather(capabilities: dict[str,list[str]]) -> dict[str, list[str]]:
     """
     request every column of every weather capability
     
@@ -82,7 +82,7 @@ def get_columns_of_weather(capabilities: dict) -> dict[str, list[str]]:
     return capabilities
 
 
-def get_columns_of_capability(capability: str) -> dict:
+def get_columns_of_capability(capability: str) -> dict[str: list[str]]:
     MIN_DATE = pd.to_datetime("2021-05-26 00:00:00", utc=True)
     unix_start = int(MIN_DATE.timestamp())
     unix_end = int(unix_start + 60)

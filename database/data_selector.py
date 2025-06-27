@@ -1,8 +1,12 @@
+import datetime
+
 import psycopg
 from dotenv import load_dotenv
+
+import interfaces
 from database import db_connector
 
-def query_fetch_one(query_string: str, params: list) -> dict | None:
+def query_fetch_one(query_string: str, params: list[str | datetime.datetime]) -> interfaces.FetchOneQueryDict | None:
     """
     fetch one function to use when querying data
     :param query_string: select string to use
@@ -16,7 +20,7 @@ def query_fetch_one(query_string: str, params: list) -> dict | None:
             result = cursor.fetchone()
             return result
 
-def select_date_value(meter_name: str, start, end) -> dict | None:
+def select_date_value(meter_name: str, start: datetime.datetime, end: datetime.datetime) -> interfaces.SelectDateValueData | None:
     """
     request data from db
     
@@ -30,7 +34,7 @@ def select_date_value(meter_name: str, start, end) -> dict | None:
 
     return query_fetch_one(query_string, [meter_name, start, end])
 
-def select_names() -> dict | None:
+def select_names() -> dict[str: list[str]] | None:
     """
     request names of data from db, based on first timestamp (currently)
     
