@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import logging
 
 
-def create_connection() -> Connection:
+def create_connection() -> Connection | None:
     """
     create a database connection to a Postgres database
     

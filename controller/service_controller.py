@@ -1,3 +1,5 @@
+from typing import cast
+
 import pandas as pd
 import datetime
 import os
@@ -83,7 +85,7 @@ def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_
     return data
 
 
-def create_end_date(timeframe: str, start_point: datetime) -> str:
+def create_end_date(timeframe: str, start_point: datetime.datetime) -> datetime.datetime:
     """
     private function to map the timeframe to an end date
     :param start_point: the date to start searching
@@ -138,7 +140,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     end = int(end_date.timestamp())
 
     data = ds.select_date_value(meter_name, start_date, end_date)
-    df = pd.DataFrame.from_dict(data)
+    df = pd.DataFrame.from_dict(cast(dict, data))
 
     if weather_capability == "plain":
         model, train_time = model_training.train_model(df[["value"]], None)
@@ -146,7 +148,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
         weather_df = dwd_weather.get_weather_data(weather_capability, column_name, start, end)
         model, train_time = model_training.train_model(df[["value"]], weather_df[[column_name]])
 
-    model_dict = {
+    model_dict: interfaces.ModelInfoDict = {
         "model": model,
         "training_time": train_time,
         "start_date": start_date,
@@ -212,5 +214,7 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     data["meanSquaredError"] = metrics_df["MSE"][0]
     data["rootOfmeanSquaredError"] = metrics_df["RMSE"][0]
     data["r2"] = metrics_df["R2"][0]
+
+    data = cast(interfaces.ForecastData, data)
 
     return data

@@ -47,19 +47,19 @@ def create_forecast_labels(last_timestamp: str, n_periods: int, resolution: str)
     :return: future labels
     """
 
-    match resolution:
-        case "hourly":
-            time_unit, frequency = "hours", "h"
-        case "daily":
-            time_unit, frequency = "days", "D"
-        case "weekly":
-            time_unit, frequency = "weeks", "W"
-        case _:
-            time_unit, frequency = None, None
+    if resolution == "hourly":
+        time_unit, frequency = "hours", "h"
+    elif resolution == "daily":
+        time_unit, frequency = "days", "D"
+    elif resolution == "weekly":
+        time_unit, frequency = "weeks", "W"
+    else:
+        raise ValueError("Unsupported resolution")
 
     # Generate future hourly timestamps
+    last_ts = pd.to_datetime(last_timestamp)
     future_labels = pd.date_range(
-        start=last_timestamp + pd.Timedelta(**{time_unit: 1}),  # Start from the next hour
+        start=last_ts + pd.Timedelta(**{time_unit: 1}),  # Start from the next hour
         periods=n_periods,
         freq=frequency
     )

@@ -1,12 +1,14 @@
 import logging
-from typing import Any
 import joblib
 import os
+import interfaces
+
 from dotenv import load_dotenv
+from typing import Any
 from root_file import ROOT_DIR
 
 
-def save_model_by_name(model: dict, name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> None:
+def save_model_by_name(model: interfaces.ModelInfoDict, name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> None:
     """
     :param model: model to save
     :param name: name of model
@@ -31,7 +33,7 @@ def save_model_by_name(model: dict, name: str, timeframe: str, resolution: str, 
         logging.debug(f"Error during saving of {path}: {e}")
 
 
-def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> dict[str, Any] | None:
+def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> interfaces.ModelInfoDict | None:
     """
     method to load a model by name and parameters
 

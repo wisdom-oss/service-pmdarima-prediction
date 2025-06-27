@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 
 import interfaces
 from database import db_connector
+from psycopg.rows import dict_row
+
 
 def query_fetch_one(query_string: str, params: list[str | datetime.datetime]) -> interfaces.FetchOneQueryDict | None:
     """

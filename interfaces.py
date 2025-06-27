@@ -1,5 +1,6 @@
 import datetime
 from typing import TypedDict
+from pmdarima import ARIMA
 
 
 class SmartmeterData(TypedDict):
@@ -32,3 +33,9 @@ class FetchOneQueryDict(TypedDict):
 class SelectDateValueData(TypedDict):
     date: list[datetime.datetime]
     value: list[float]
+
+class ModelInfoDict(TypedDict):
+    end_date: datetime
+    model: ARIMA
+    start_date: datetime
+    training_time: float
