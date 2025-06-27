@@ -5,6 +5,8 @@ import datetime
 import os
 
 from dotenv import load_dotenv
+
+from interfaces import SelectDateValueData
 from weather import dwd_weather
 from dateutil.relativedelta import relativedelta
 from database import data_selector as ds
@@ -73,6 +75,7 @@ def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_
 
     end_date = create_end_date(timeframe, start_date)
     data = ds.select_date_value(meter_name, start_date, end_date)
+    data = dict(__resample_data(data, resolution))
 
     load_dotenv()
     format = os.getenv("DATETIME_STANDARD_FORMAT")
@@ -81,6 +84,8 @@ def get_smartmeter_data(meter_name: str, timeframe: str, resolution: str, start_
     data["name"] = f"{meter_name}"
     data["timeframe"] = f"{timeframe}"
     data["resolution"] = f"{resolution}"
+
+    data = cast(interfaces.SmartmeterData, data)
 
     return data
 
@@ -218,3 +223,34 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     data = cast(interfaces.ForecastData, data)
 
     return data
+
+
+def __resample_data(data: interfaces.SelectDateValueData, resolution: str) -> interfaces.SelectDateValueData:
+    """
+    resamples the requested data from db using pandas
+
+    :param data: data requested
+    :param resolution: new resolution to transform
+    :return: dict of same parameters as input
+
+    add further in trainmodel and forecast
+    """
+    df = pd.DataFrame.from_dict(dict(data))
+    df.set_index("date", inplace=True)
+
+    if resolution == "hourly":
+        resolution = "h"
+    elif resolution == "daily":
+        resolution = "D"
+    elif resolution == "weekly":
+        resolution = "7D" # solid 7day chunks instead of weekly bins ("W")
+    else:
+        raise ValueError("Unsupported resolution")
+
+    agg_df = df.resample(resolution).mean()
+    agg_df = agg_df.reset_index()
+
+    data = agg_df.to_dict(orient="list")
+
+    return data
+
