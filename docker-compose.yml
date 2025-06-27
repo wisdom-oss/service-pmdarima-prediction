@@ -1,6 +1,8 @@
 services:
   water_demand_prediction:
     image: image_wdp
+    env_file:
+      - .env
     mem_limit: "55g" # dein container darf maximal 55 GB RAM nutzen
     mem_reservation: "50g" # dein container sollte maximal 50GB RAM nutzen
     memswap_limit: -1  # dein container darf unbegrenzt swap nutzen (33GiB)
@@ -12,10 +14,6 @@ services:
     build: .
     container_name: container_wdp
     volumes:
-      # Bind Data from outside the container to the container
-      # - "../environment/.env:/service-water-demand-prediction/.env:ro"
-      - "./.env:/service-water-demand-prediction/.env:ro"
-
       # Mount a volume to access trained models after container deletion
       - models_volume:/service-water-demand-prediction/files/trained_models
       - results_volume:/service-water-demand-prediction/files/results
