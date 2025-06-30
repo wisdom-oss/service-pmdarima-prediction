@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: Water Information System API
+  version: 1.0.0
+  description: API for retrieving smartmeter data, weather capabilities, and prediction modeling.
+servers:
+  - url: http://localhost:5000
+
+paths:
+  /helloworld:
+    get:
+      summary: Simple Hello World endpoint
+      responses:
+        '200':
+          description: Returns Hello World
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Hello, World!"
+
+  /meterNames:
+    get:
+      summary: Get available smartmeter types
+      responses:
+        '200':
+          description: Returns a mapping of internal names to display names
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                example:
+                  atypical-household: "atypical household"
+                  family-household: "family household"
+                  retired-household: "retired household"
+                  single-household: "single household"
+
+  /weatherCapabilities:
+    get:
+      summary: Get all available weather capabilities and their columns
+      responses:
+        '200':
+          description: Weather capabilities with corresponding data columns
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+                example:
+                  air_temperature: ["QN_9", "RF_TU", "TT_TU", "ts"]
+                  cloud_type: ["QN_8", "V_N", "V_N_I", "ts"]
+                  sun: []
+
+  /weatherColumns:
+    post:
+      summary: Get columns for a specific weather capability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                capability:
+                  type: string
+                  example: "plain"
+      responses:
+        '200':
+          description: Weather columns or fallback message
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  No Weather Attribute chosen: "No Weather Attribute chosen"
+
+  /singleSmartmeter:
+    post:
+      summary: Get smartmeter data for a specific configuration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                timeframe:
+                  type: string
+                resolution:
+                  type: string
+                startpoint:
+                  type: string
+                  format: date-time
+              required: [name, timeframe, resolution, startpoint]
+              example:
+                name: "family-household"
+                timeframe: "one week"
+                resolution: "weekly"
+                startpoint: "2022-01-01 00:00:00"
+      responses:
+        '200':
+          description: Smartmeter values for the given config
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  date:
+                    type: array
+                    items:
+                      type: string
+                  name:
+                    type: string
+                  resolution:
+                    type: string
+                  timeframe:
+                    type: string
+                  value:
+                    type: array
+                    items:
+                      type: number
+                example:
+                  date: ["01.01.22 00:00"]
+                  name: "family-household"
+                  resolution: "weekly"
+                  timeframe: "one week"
+                  value: [1.3725138393758913]
+
+  /trainmodel:
+    post:
+      summary: Train prediction model using smartmeter and weather data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                timeframe:
+                  type: string
+                resolution:
+                  type: string
+                startpoint:
+                  type: string
+                weatherCapability:
+                  type: string
+                weatherColumn:
+                  type: string
+              required:
+                - name
+                - timeframe
+                - resolution
+                - startpoint
+                - weatherCapability
+                - weatherColumn
+              example:
+                name: "atypical-household"
+                timeframe: "one month"
+                resolution: "hourly"
+                startpoint: "2022-01-01 00:00:00"
+                weatherCapability: "air_temperature"
+                weatherColumn: "TT_TU"
+      responses:
+        '200':
+          description: Confirmation of model training
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Model saved"
+
+  /loadmodelandpredict:
+    post:
+      summary: Load model and predict smartmeter values
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                timeframe:
+                  type: string
+                resolution:
+                  type: string
+                startpoint:
+                  type: string
+                weatherCapability:
+                  type: string
+                weatherColumn:
+                  type: string
+              required:
+                - name
+                - timeframe
+                - resolution
+                - startpoint
+                - weatherCapability
+                - weatherColumn
+              example:
+                name: "atypical-household"
+                timeframe: "one month"
+                resolution: "hourly"
+                startpoint: "2022-01-01 00:00:00"
+                weatherCapability: "air_temperature"
+                weatherColumn: "TT_TU"
+      responses:
+        '200':
+          description: Prediction results and evaluation metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  timeframe:
+                    type: string
+                  resolution:
+                    type: string
+                  date:
+                    type: array
+                    items:
+                      type: string
+                  value:
+                    type: array
+                    items:
+                      type: number
+                  realValue:
+                    type: array
+                    items:
+                      type: number
+                  lower_conf_values:
+                    type: array
+                    items:
+                      type: number
+                  upper_conf_values:
+                    type: array
+                    items:
+                      type: number
+                  meanAbsoluteError:
+                    type: number
+                  meanSquaredError:
+                    type: number
+                  rootOfmeanSquaredError:
+                    type: number
+                  r2:
+                    type: number
+                  aic:
+                    type: number
+                  fit_time:
+                    type: number
+                example:
+                  name: "atypical-household"
+                  timeframe: "one month"
+                  resolution: "hourly"
+                  date: ["01.02.22 00:00", "01.02.22 01:00"]
+                  value: [0.3358, 0.4587]
+                  realValue: [0.3194, 0.4217]
+                  lower_conf_values: [0.1531, 0.2176]
+                  upper_conf_values: [0.5185, 0.6999]
+                  meanAbsoluteError: 0.1107
+                  meanSquaredError: 0.0172
+                  rootOfmeanSquaredError: 0.1311
+                  r2: 0.5523
+                  aic: -1131.4931
+                  fit_time: 113.1897
