@@ -1,12 +1,29 @@
-version: '3'
 services:
-  flask-app:
-    image: water-demand-prediction:0.3
+  water_demand_prediction:
+    image: image_wdp
+    env_file:
+      - .env
+    mem_limit: "55g" # dein container darf maximal 55 GB RAM nutzen
+    mem_reservation: "50g" # dein container sollte maximal 50GB RAM nutzen
+    memswap_limit: -1  # dein container darf unbegrenzt swap nutzen (33GiB)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     build: .
+    container_name: container_wdp
+    volumes:
+      # Mount a volume to access trained models after container deletion
+      - models_volume:/service-water-demand-prediction/files/trained_models
+      - results_volume:/service-water-demand-prediction/files/results
     ports:
-      - "8080:8080"
+      - "9120:8090"
     networks:
       - flask-network
+volumes:
+  models_volume: #Done?
+  results_volume:
 networks:
   flask-network:
     driver: bridge
