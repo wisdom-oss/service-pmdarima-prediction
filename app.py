@@ -1,8 +1,8 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from controller import service_controller
+from controller import service_controller, model_handling
+from controller.error_handling_wrapper import check_for_empty_json_fields
 import logging, sys
-
 app = Flask(__name__)
 CORS(app)
 
@@ -41,11 +41,13 @@ def request_weather_column():
 
 
 @app.route(f"{prefix}/singleSmartmeter", methods=["POST"])
+@check_for_empty_json_fields
 def single_smartmeter():
     """
     get data of a chosen smartmeter and chosen timely frame
     :return: amount of smartmeter data
     """
+
     data = service_controller.get_smartmeter_data(request.json["name"],
                                                   request.json["timeframe"],
                                                   request.json["resolution"],
@@ -55,6 +57,7 @@ def single_smartmeter():
 
 
 @app.route(f"{prefix}/trainModel", methods=["POST"])
+@check_for_empty_json_fields
 def train_model_on_smartmeter():
     """
     get data of a chosen smartmeter and chosen timely frame
@@ -69,10 +72,11 @@ def train_model_on_smartmeter():
                                    request.json["weatherColumn"]
                                    )
 
-    return jsonify("Model saved")
+    jsonify("Model trained succesfully")
 
 
 @app.route(f"{prefix}/loadModelAndPredict", methods=["POST"])
+@check_for_empty_json_fields
 def pred_from_model():
     """
     get data of a chosen smartmeter and chosen timely frame

@@ -1,12 +1,8 @@
 from typing import cast
-
 import pandas as pd
 import datetime
 import os
-
 from dotenv import load_dotenv
-
-from interfaces import SelectDateValueData
 from weather import dwd_weather
 from dateutil.relativedelta import relativedelta
 from database import data_selector as ds
@@ -163,6 +159,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     model_handling.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string,
                                       weather_capability, column_name)
 
+    return "Model saved successfully"
 
 def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, weather_capability: str,
              column_name: str) -> interfaces.ForecastData | None:
@@ -214,7 +211,7 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     data["date"] = forecast_labels
     data["realValue"] = real_values
     data["aic"] = model_dict["model"].aic()
-    data["fit_time"] = model_dict["training_time"]
+    data["fitTime"] = model_dict["training_time"]
     data["meanAbsoluteError"] = metrics_df["MAE"][0]
     data["meanSquaredError"] = metrics_df["MSE"][0]
     data["rootOfmeanSquaredError"] = metrics_df["RMSE"][0]
