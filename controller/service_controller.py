@@ -134,6 +134,9 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     :return: None
     """
 
+    if not model_handling.model_is_unique(meter_name, timeframe, resolution, start_date_string, weather_capability, column_name):
+        return "Model already exists"
+
     start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S").replace(
         tzinfo=datetime.timezone.utc)
     end_date = create_end_date(timeframe, start_date).replace(tzinfo=datetime.timezone.utc)

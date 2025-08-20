@@ -64,7 +64,7 @@ def train_model_on_smartmeter():
     :return: predicted values with conf_intervals
     """
 
-    service_controller.train_model(request.json["name"],
+    response = service_controller.train_model(request.json["name"],
                                    request.json["timeframe"],
                                    request.json["resolution"],
                                    request.json["startpoint"],
@@ -72,7 +72,7 @@ def train_model_on_smartmeter():
                                    request.json["weatherColumn"]
                                    )
 
-    jsonify("Model trained succesfully")
+    return jsonify(response)
 
 
 @app.route(f"{prefix}/loadModelAndPredict", methods=["POST"])
