@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from typing import TypedDict
 from pmdarima import ARIMA
 
@@ -27,11 +27,11 @@ class ForecastData(TypedDict):
     value: list[float]
 
 class FetchOneQueryDict(TypedDict):
-    date: list[datetime.datetime]
+    date: list[datetime]
     value: list[float]
 
 class SelectDateValueData(TypedDict):
-    date: list[datetime.datetime]
+    date: list[datetime]
     value: list[float]
 
 class ModelInfoDict(TypedDict):
