@@ -140,7 +140,7 @@ def handle_errors(e: ServiceError) -> Response:
 
 
 @app.errorhandler(HTTPException)
-def handle_exceptions(e: HTTPException) -> Response:
+def handle_http_exceptions(e: HTTPException) -> Response:
     response = e.get_response()
     response.data = json.dumps(
         {
