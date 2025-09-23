@@ -66,11 +66,11 @@ class ServiceError(HTTPException):
     title: str
     detail: str
     instance: str
-    errors: list[Exception]
+    errors: list[Exception] | None
     host: str
 
     def __init__(
-        self, type: str, status: int, title: str, detail: str, errors: list[Exception]
+        self, type: str, status: int, title: str, detail: str, errors: list[Exception] | None = None
     ) -> None:
         self.type = type
         self.status = status
@@ -91,27 +91,30 @@ class ServiceError(HTTPException):
         if self.type == "":
             self.type = "https://werkzeug.palletsprojects.com/en/stable/exceptions/#werkzeug.exceptions.HTTPException"
 
+        data: dict[str, Any] = {
+            "type": self.type,
+            "status": self.status,
+            "title": (
+                self.title.strip()
+                if self.title.strip() != ""
+                else HTTP_STATUS_CODES.get(self.status, "Unknown Error")
+            ),
+            "detail": self.detail,
+            "instance": f"tag:{platform.node()},{strftime("%Y-%m-%d", gmtime())}:{self.convert_camel_case(self.title)}:{int(datetime.now().timestamp())}",
+            "host": platform.node(),
+        }
 
-        body = dumps(
-            {
-                "type": self.type,
-                "status": self.status,
-                "title": (
-                    self.title.strip()
-                    if self.title.strip() != ""
-                    else HTTP_STATUS_CODES.get(self.status, "Unknown Error")
-                ),
-                "detail": self.detail,
-                "instance": f"tag:{platform.node()},{strftime("%Y-%m-%d", gmtime())}:{self.convert_camel_case(self.title)}:{int(datetime.now().timestamp())}",
-                "errors": [str(e) for e in self.errors],
-                "host": platform.node()
-            }
-        )
+        if self.errors is not None and len(self.errors) > 0:
+            data["errors"] = [str(e) for e in self.errors]
+
+        body = dumps(data)
         return body
-    
-    def convert_camel_case(self, string:str)->str:
+
+    def convert_camel_case(self, string: str) -> str:
         # strip before split the sentence
-        return ''.join([word.capitalize() for word in string.strip().split()])
-    
-    def get_response(self, environ: Any | Request | None = None, scope: Any| None = None) -> Response:        
+        return "".join([word.capitalize() for word in string.strip().split()])
+
+    def get_response(
+        self, environ: Any | Request | None = None, scope: Any | None = None
+    ) -> Response:
         return WSGIResponse(self.get_body(), self.status, self.get_headers())
