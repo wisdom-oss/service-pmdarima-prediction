@@ -9,6 +9,7 @@ from database import data_selector as ds
 from forecasting import model_training, data_forecast, model_metrics
 from controller import model_handling
 import interfaces
+import dateutil
 
 
 def get_meter_names() -> dict[str, str] | None:
@@ -94,7 +95,7 @@ def create_end_date(timeframe: str, start_point: datetime.datetime) -> datetime.
     :return: the end date of the corresponding timeframe
     """
 
-    end = 0
+    end = datetime.datetime.now()
     match timeframe:
         case "one day":
             end = start_point + relativedelta(days=1)
@@ -115,7 +116,7 @@ def create_end_date(timeframe: str, start_point: datetime.datetime) -> datetime.
     # reduce end by 1 minute, because unix doesn't recognize lower time changes
     # in order to invalidate the last entry,
     # so there are exactly 168 (observations + startpoint)
-    end = end - datetime.timedelta(hours=1)
+    end = end + datetime.timedelta(minutes=-1)
 
     return end
 
@@ -135,16 +136,23 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     """
 
     if not model_handling.model_is_unique(meter_name, timeframe, resolution, start_date_string, weather_capability, column_name):
-        return "Model already exists"
+        raise interfaces.ServiceError(
+            "",
+            409,
+            "Model Already Exists",
+            "The model you are tying to train already exits",
+            []
+        )
 
-    start_date = datetime.datetime.strptime(start_date_string, "%Y-%m-%d %H:%M:%S").replace(
-        tzinfo=datetime.timezone.utc)
+    start_date = dateutil.parser.isoparse(start_date_string)
     end_date = create_end_date(timeframe, start_date).replace(tzinfo=datetime.timezone.utc)
     start = int(start_date.timestamp())
     end = int(end_date.timestamp())
 
     data = ds.select_date_value(meter_name, start_date, end_date)
-    df = pd.DataFrame.from_dict(cast(dict, data))
+    input = cast(dict[str, list[datetime.datetime] | list [float]], data)
+    df = pd.DataFrame(input)
+    print(df.head(5))
 
     if weather_capability == "plain":
         model, train_time = model_training.train_model(df[["value"]], None)
@@ -162,7 +170,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     model_handling.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string,
                                       weather_capability, column_name)
 
-    return "Model saved successfully"
+    return {"status": "model_trained", "details": {"trainingTime": train_time, "modelStartDate": start_date.isoformat(), "modelEndDate": end_date.isoformat()}}
 
 def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, weather_capability: str,
              column_name: str) -> interfaces.ForecastData | None:
@@ -208,9 +216,9 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
 
     # build dict data object
     data = forecast_df.to_dict(orient="list")
-    data["name"] = f"{meter_name}"
-    data["timeframe"] = f"{timeframe}"
-    data["resolution"] = f"{resolution}"
+    data["name"] = meter_name
+    data["timeframe"] = timeframe
+    data["resolution"] = resolution
     data["date"] = forecast_labels
     data["realValue"] = real_values
     data["aic"] = model_dict["model"].aic()
@@ -219,6 +227,7 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     data["meanSquaredError"] = metrics_df["MSE"][0]
     data["rootOfmeanSquaredError"] = metrics_df["RMSE"][0]
     data["r2"] = metrics_df["R2"][0]
+
 
     data = cast(interfaces.ForecastData, data)
 
