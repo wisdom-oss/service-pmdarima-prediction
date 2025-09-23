@@ -32,6 +32,7 @@ def save_model_by_name(model: interfaces.ModelInfoDict, name: str, timeframe: st
         logging.debug(f"Model saved to {path}")
     except Exception as e:
         logging.debug(f"Error during saving of {path}: {e}")
+        raise e
 
 
 def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> interfaces.ModelInfoDict | None:
@@ -55,12 +56,10 @@ def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: 
         raise TypeError(f"Created Path is None")
 
     try:
-        # Load the model up, create predictions
         data = joblib.load(path)
-        return data
-    except Exception as e:
-        logging.debug(f"Loading {path} failed: {e}")
-        return None
+    except FileNotFoundError:
+        raise interfaces.ServiceError("", 424, "Model Not Trained", "The model you tried to use for a prediction has not been trained yet")
+    return data
 
 
 def model_is_unique(name: str, timeframe: str, resolution: str, start_point: str, capability: str,
