@@ -4,9 +4,18 @@ import os
 import interfaces
 from dotenv import load_dotenv
 from root_file import ROOT_DIR
+import datetime
 
 
-def save_model_by_name(model: interfaces.ModelInfoDict, name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> None:
+def save_model_by_name(
+    model: interfaces.ModelInfoDict,
+    name: str,
+    timeframe: str,
+    resolution: str,
+    start_point: datetime.datetime,
+    capability: str,
+    column_name: str,
+) -> None:
     """
     :param model: model to save
     :param name: name of model
@@ -18,7 +27,9 @@ def save_model_by_name(model: interfaces.ModelInfoDict, name: str, timeframe: st
     :return: None
     """
 
-    path = __create_file_path(name, timeframe, resolution, start_point, capability, column_name)
+    path = __create_file_path(
+        name, timeframe, resolution, start_point, capability, column_name
+    )
 
     if path is None:
         raise TypeError("Path cannot be None")
@@ -35,7 +46,14 @@ def save_model_by_name(model: interfaces.ModelInfoDict, name: str, timeframe: st
         raise e
 
 
-def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> interfaces.ModelInfoDict | None:
+def load_model_by_name(
+    name: str,
+    timeframe: str,
+    resolution: str,
+    start_point: datetime.datetime,
+    capability: str,
+    column_name: str,
+) -> interfaces.ModelInfoDict | None:
     """
     method to load a model by name and parameters
 
@@ -48,8 +66,9 @@ def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: 
     :return: None
     """
 
-
-    path = __create_file_path(name, timeframe, resolution, start_point, capability, column_name)
+    path = __create_file_path(
+        name, timeframe, resolution, start_point, capability, column_name
+    )
 
     if path is None:
         logging.debug(f"Created Path is None")
@@ -59,11 +78,22 @@ def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: 
         data = joblib.load(path)
         return data
     except FileNotFoundError:
-        raise interfaces.ServiceError("", 424, "Model Not Trained", "The model you tried to use for a prediction has not been trained yet")
+        raise interfaces.ServiceError(
+            "",
+            424,
+            "Model Not Trained",
+            "The model you tried to use for a prediction has not been trained yet",
+        )
 
 
-def model_is_unique(name: str, timeframe: str, resolution: str, start_point: str, capability: str,
-                    column_name: str) -> bool:
+def model_is_unique(
+    name: str,
+    timeframe: str,
+    resolution: str,
+    start_point: datetime.datetime,
+    capability: str,
+    column_name: str,
+) -> bool:
     """
     check for duplicate models to reduce server usage and prevent multiple model training
     :param name:
@@ -74,7 +104,9 @@ def model_is_unique(name: str, timeframe: str, resolution: str, start_point: str
     :param column_name:
     :return:
     """
-    path = __create_file_path(name, timeframe, resolution, start_point, capability, column_name)
+    path = __create_file_path(
+        name, timeframe, resolution, start_point, capability, column_name
+    )
 
     """
     return true if model is unique, else false
@@ -85,7 +117,14 @@ def model_is_unique(name: str, timeframe: str, resolution: str, start_point: str
         return True
 
 
-def __create_file_path(name: str, timeframe: str, resolution: str, start_point: str, capability: str, column_name: str) -> str | None:
+def __create_file_path(
+    name: str,
+    timeframe: str,
+    resolution: str,
+    start_point: datetime.datetime,
+    capability: str,
+    column_name: str,
+) -> str | None:
     """
     create a unique file name which is used to save and retrieve trained model data by name
 
@@ -101,12 +140,12 @@ def __create_file_path(name: str, timeframe: str, resolution: str, start_point: 
     if capability == "plain":
         column_name = "no_column"
 
-    file_name = f"{resolution}-{timeframe}-{name}-{start_point}-{capability}-{column_name}.pkl"
+    file_name = f"{resolution}-{timeframe}-{name}-{start_point.timestamp()}-{capability}-{column_name}.pkl"
     file_name = file_name.replace(" ", "-")
     file_name = file_name.replace(":", "-")
 
     load_dotenv()
-    folder_path = f"{os.getenv("FILE_PATH_TRAINED_MODELS")}"
+    folder_path = f"{os.getenv('FILE_PATH_TRAINED_MODELS')}"
     full_path = os.path.join(ROOT_DIR, folder_path, file_name)
 
     return full_path
@@ -115,7 +154,7 @@ def __create_file_path(name: str, timeframe: str, resolution: str, start_point: 
 def __has_duplicates(full_path: str) -> bool:
     """
     create a temp name and check if model already exists
-    
+
     :param full_path: name of file to test
     :return: True if duplicate, False else
     """

@@ -135,7 +135,8 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
     :return: None
     """
 
-    if not model_handling.model_is_unique(meter_name, timeframe, resolution, start_date_string, weather_capability, column_name):
+    start_date = dateutil.parser.isoparse(start_date_string)
+    if not model_handling.model_is_unique(meter_name, timeframe, resolution, start_date, weather_capability, column_name):
         raise interfaces.ServiceError(
             "",
             409,
@@ -167,7 +168,7 @@ def train_model(meter_name: str, timeframe: str, resolution: str, start_date_str
         "end_date": end_date,
     }
 
-    model_handling.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date_string,
+    model_handling.save_model_by_name(model_dict, meter_name, timeframe, resolution, start_date,
                                       weather_capability, column_name)
 
     return {"status": "model_trained", "details": {"trainingTime": train_time, "modelStartDate": start_date.isoformat(), "modelEndDate": end_date.isoformat()}}
@@ -187,8 +188,8 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     """
 
     # load model by parameters
-    start_date_string = dateutil.parser.isoparse(start_date)
-    model_dict = model_handling.load_model_by_name(meter_name, timeframe, resolution, start_date_string.isoformat(), weather_capability,
+    start_date_dt = dateutil.parser.isoparse(start_date)
+    model_dict = model_handling.load_model_by_name(meter_name, timeframe, resolution, start_date_dt, weather_capability,
                                                    column_name)
 
     # create 24 forecast label dates
