@@ -28,9 +28,9 @@ def create_forecast_data(model: ARIMA, n_periods: int, exogenous_df: pd.DataFram
     )
 
     # create dataframe from separate series
-    df = pd.DataFrame({"lower_conf_values": conf_intervals[:, 0],
+    df = pd.DataFrame({"lowerConfValues": conf_intervals[:, 0],
                              "value": predicted_values,
-                             "upper_conf_values": conf_intervals[:, 1]})
+                             "upperConfValues": conf_intervals[:, 1]})
 
     logging.debug("Finished forecasting data")
 
