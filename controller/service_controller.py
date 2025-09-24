@@ -187,7 +187,8 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
     """
 
     # load model by parameters
-    model_dict = model_handling.load_model_by_name(meter_name, timeframe, resolution, start_date, weather_capability,
+    start_date_string = dateutil.parser.isoparse(start_date)
+    model_dict = model_handling.load_model_by_name(meter_name, timeframe, resolution, start_date_string.isoformat(), weather_capability,
                                                    column_name)
 
     # create 24 forecast label dates
