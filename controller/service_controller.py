@@ -193,23 +193,23 @@ def forecast(meter_name: str, timeframe: str, resolution: str, start_date: str, 
                                                    column_name)
 
     # create 24 forecast label dates
-    forecast_labels = data_forecast.create_forecast_labels(model_dict["end_date"], 24, resolution)
+    forecast_labels = data_forecast.create_forecast_labels(model_dict["end_date"], 23, resolution)
 
     # use model and weather info to get predicted data
     if weather_capability == "plain":
-        forecast_df = data_forecast.create_forecast_data(model_dict["model"], 24, None)
+        forecast_df = data_forecast.create_forecast_data(model_dict["model"], 23, None)
     else:
         # use labels to get weather info
         weather_df = dwd_weather.get_weather_data(weather_capability, column_name, int(forecast_labels[0].timestamp()),
                                                   int(forecast_labels[-1].timestamp()))
 
-        forecast_df = data_forecast.create_forecast_data(model_dict["model"], 24, weather_df[[column_name]])
+        forecast_df = data_forecast.create_forecast_data(model_dict["model"], 23, weather_df[[column_name]])
 
     # select real values to compare with predicted data
     real_values = ds.select_date_value(meter_name, forecast_labels[0], forecast_labels[-1])["value"]
 
     # evaluate model prediction
-    metrics_df = model_metrics.calculate_metrics(real_values, forecast_df["value"])
+    metrics_df = model_metrics.calculate_metrics(real_values, forecast_df["value"][:22])
 
     # change labels to string repr
     load_dotenv()
