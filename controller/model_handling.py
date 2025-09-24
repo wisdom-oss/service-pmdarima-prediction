@@ -57,9 +57,9 @@ def load_model_by_name(name: str, timeframe: str, resolution: str, start_point: 
 
     try:
         data = joblib.load(path)
+        return data
     except FileNotFoundError:
         raise interfaces.ServiceError("", 424, "Model Not Trained", "The model you tried to use for a prediction has not been trained yet")
-    return data
 
 
 def model_is_unique(name: str, timeframe: str, resolution: str, start_point: str, capability: str,
