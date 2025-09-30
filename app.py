@@ -1,19 +1,20 @@
 from flask import Flask
-from flask_json import FlaskJSONProvider
+from flask_json import FlaskJSON
 from os import makedirs
 from settings import Settings
 
-config: Settings
+config = Settings()
 
 app = Flask(__name__)
-FlaskJSONProvider(app)
 
 import routes.hello_world
 import routes.meter_names
+import routes.weather_capabilities
+import routes.weather_columns
+import routes.single_smartmeter
+
 
 if __name__ == "__main__":
-
-    config = Settings()
 
     makedirs(config.result_storage_location, exist_ok=True)
     makedirs(config.example_data_storage_location, exist_ok=True)
