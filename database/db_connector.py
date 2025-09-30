@@ -4,45 +4,24 @@ import os
 from dotenv import load_dotenv
 import logging
 
+from __main__ import config
 
-def create_connection() -> Connection | None:
+
+def create_connection() -> Connection:
     """
     create a database connection to a Postgres database
-    
+
     :return: connection object
     """
-    try:
-        load_dotenv()
 
-        database = os.getenv("DB")
-        username = os.getenv("USER")
-        password = os.getenv("PW")
-
-        print(password)
-
-        host = os.getenv("HOST")
-        port = os.getenv("PORT")
-
-
-        if database == None:
-            raise Exception("no database name set up")
-        
-        if username == None or password == None:
-            raise Exception("Database Credentials Missing")
-        
-
-        connection = psycopg.connect(dbname=database.strip(),
-                                      user=username.strip(),
-                                      password=password.strip(),
-                                      host=host.strip(),
-                                      port=port.strip())
-        if connection:
-            logging.debug(f"Database connection established")
-            return connection
-        else:
-            logging.error(f"Database connection failed")
-    except Exception as error:
-        logging.debug(f"Connection not established, because of {error}")
-        raise Exception(f"Database connection failed")
-
-
+    connection = psycopg.connect(
+        dbname=config.database_schema_name,
+        user=config.database_user,
+        password=config.database_password,
+        host=config.database_host,
+        port=config.database_port,
+    )
+    if connection:
+        return connection
+    else:
+        raise Exception("Database connection failed")
