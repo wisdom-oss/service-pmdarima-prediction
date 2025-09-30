@@ -19,7 +19,7 @@ from classes import (
 from exceptions.service_error import ServiceException
 
 
-class api(BaseModel):
+class _api(BaseModel):
     """
     The main entry point for interacting with the WISdoM DWD Proxy
     """
@@ -157,6 +157,7 @@ class api(BaseModel):
             end = datetime.now().astimezone(utc)
         params["end"] = end.isoformat()
 
+
         if for_capabilities is None:
             for_capabilities = await self.get_available_capabilities()
 
@@ -244,4 +245,4 @@ class api(BaseModel):
             return key, data
 
 
-API: api = api(base_url=config.dwd_proxy_base_api, station_id=config.dwd_station_id)
+API: _api = _api(base_url=config.dwd_proxy_base_api, station_id=config.dwd_station_id)
