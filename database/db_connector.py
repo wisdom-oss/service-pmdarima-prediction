@@ -21,11 +21,11 @@ def create_connection() -> Connection:
     if __connection is None or __connection.closed:
 
         __connection = psycopg.connect(
-            dbname=config.database_schema_name,
-            user=config.database_user,
-            password=config.database_password,
-            host=config.database_host,
-            port=config.database_port,
+            dbname=config.db_name,
+            user=config.db_user,
+            password=config.db_password.get_secret_value(),
+            host=config.db_host,
+            port=config.db_port,
         )
 
     return __connection

@@ -67,7 +67,7 @@ def get_columns_of_weather(capabilities: dict[str,list[str]]) -> dict[str, list[
     """
     MIN_DATE = pd.to_datetime("2021-05-26 00:00:00", utc=True)
     unix_start = int(MIN_DATE.timestamp())
-    unix_end = int(unix_start + 60)
+    unix_end = int(unix_start)
 
     for capability in capabilities:
         response = requests.get(
@@ -85,7 +85,7 @@ def get_columns_of_weather(capabilities: dict[str,list[str]]) -> dict[str, list[
 def get_columns_of_capability(capability: str) -> dict[str: list[str]]:
     MIN_DATE = pd.to_datetime("2021-05-26 00:00:00", utc=True)
     unix_start = int(MIN_DATE.timestamp())
-    unix_end = int(unix_start + 60)
+    unix_end = int(unix_start)
 
     capability_dict = {"columns": []}
 
@@ -108,7 +108,7 @@ def get_columns_of_capability(capability: str) -> dict[str: list[str]]:
     return capability_dict
 
 
-def get_weather_data(capability: str, column: str, unix_start: int, unix_end: float) -> pd.DataFrame | None:
+def get_weather_data(capability: str, column: str, unix_start: int, unix_end: int) -> pd.DataFrame | None:
     """
     request weather data from dwd
     
@@ -127,6 +127,8 @@ def get_weather_data(capability: str, column: str, unix_start: int, unix_end: fl
             DWD_API + f"/{capability}/hourly?from={unix_start}&until={unix_end}"
         )
         data = response.json()
+
+        print(data)
 
         df = json_normalize(data["timeseries"])
     except Exception as e:

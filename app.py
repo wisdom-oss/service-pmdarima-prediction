@@ -12,6 +12,8 @@ import routes.meter_names
 import routes.weather_capabilities
 import routes.weather_columns
 import routes.single_smartmeter
+import routes.train_model
+import routes.forecast_with_model
 
 
 if __name__ == "__main__":

@@ -5,6 +5,8 @@
 /.idea
 .idea
 
+.files
+
 # Environments
 .env
 .venv

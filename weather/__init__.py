@@ -157,7 +157,6 @@ class _api(BaseModel):
             end = datetime.now().astimezone(utc)
         params["end"] = end.isoformat()
 
-
         if for_capabilities is None:
             for_capabilities = await self.get_available_capabilities()
 
@@ -231,6 +230,51 @@ class _api(BaseModel):
             capabilities.append(capability)
 
         return capabilities
+
+    async def get_data(
+        self,
+        capability: SupportedCapabilities,
+        granularity: SupportedResolution = "hourly",
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ) -> Any:
+        params: dict[str, str] = dict()
+        if start is not None:
+            start = start.astimezone(utc)
+        else:
+            start = datetime(year=0, month=0, day=0).astimezone(utc)
+        params["start"] = start.isoformat()
+
+        if end is not None:
+            end = end.astimezone(utc)
+        else:
+            end = datetime.now().astimezone(utc)
+        params["end"] = end.isoformat()
+
+        url = urllib.parse.urljoin(
+            base=self.base_url.encoded_string(),
+            url=(
+                f"v2/timeseries/climateObservations/{capability}/{granularity}/{self.station_id}?{urllib.parse.urlencode(params)}"
+            ),
+        )
+
+        data: dict[str, Any] = dict()
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status != 200:
+                    raise ServiceException(
+                        "",
+                        500,
+                        "Weather API Failure",
+                        "Unable to connect tot the Weather API",
+                    )
+                
+                data = await response.json()
+
+    
+        print(data)
+                
 
     async def __do_request_for_json(
         self,
