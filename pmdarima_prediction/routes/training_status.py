@@ -30,4 +30,5 @@ def listen_to_training_updates(training_id: str, ws: WebSocket) -> None:
                 continue
             if line == "finished arima model training":
                 ws.close(reason="training finished")
+                break
             websockets.publish(line, [training_id])
