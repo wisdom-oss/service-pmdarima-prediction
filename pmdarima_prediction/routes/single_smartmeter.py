@@ -1,13 +1,11 @@
-from .. import app
-
-from ..classes import Datapoint
-from flask_pydantic import validate # type: ignore
+from flask_pydantic import validate  # type: ignore
 from pydantic import BaseModel
-from pydantic_extra_types.pendulum_dt import Duration, DateTime
+from pydantic_extra_types.pendulum_dt import DateTime, Duration
 
+from .. import app
+from ..classes import Datapoint
 from ..controller import smart_meter_data
 from ..exceptions.service_error import ServiceException
-
 from ..validators import validate_meter_id
 
 

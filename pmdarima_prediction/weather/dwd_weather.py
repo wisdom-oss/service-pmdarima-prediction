@@ -1,9 +1,10 @@
-import requests
-import pandas as pd
 import logging
 import os
-from pandas import json_normalize
+
+import pandas as pd
+import requests
 from dotenv import load_dotenv
+from pandas import json_normalize
 
 
 def load_dwd_api() -> str | None:

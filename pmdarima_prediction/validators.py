@@ -1,8 +1,10 @@
 from functools import wraps
 from typing import Any, Callable
+
 from flask import request
-from .exceptions.service_error import ServiceException
+
 from .database.db_connector import create_connection as __open_conn
+from .exceptions.service_error import ServiceException
 
 
 def validate_meter_id(parameter_name: str = "meter_id"):

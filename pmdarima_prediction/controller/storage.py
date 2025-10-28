@@ -1,12 +1,12 @@
-from .. import config
+import pickle
 from os import path
 from pathlib import Path
 from typing import Any
 
-import pickle
 from minio import Minio, S3Error
 from pmdarima import ARIMA
 
+from .. import config
 from ..classes import ModelMetaData
 from ..exceptions.service_error import ServiceException
 

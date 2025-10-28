@@ -1,7 +1,8 @@
+from flask_pydantic import validate  # type: ignore
+
 from .. import app
-from ..database.db_connector import create_connection
 from ..classes import SmartMeter
-from flask_pydantic import validate # type: ignore
+from ..database.db_connector import create_connection
 
 
 @app.get("/meter-names")

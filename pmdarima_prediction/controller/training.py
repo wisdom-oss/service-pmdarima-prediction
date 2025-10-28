@@ -1,18 +1,16 @@
-from .. import config
-import warnings
-import pandas as pd
-import pmdarima as pmd
 import logging
+import warnings
 from contextlib import redirect_stdout
 from os import path
-
 from time import time
 
+import pandas as pd
+import pmdarima as pmd
 from pydantic_extra_types.pendulum_dt import Duration
 
+from .. import config
 from ..classes import ModelMetaData
 from ..controller import storage
-
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 

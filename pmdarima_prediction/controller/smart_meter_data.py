@@ -1,7 +1,9 @@
 from typing import Any
+
 import isodate
 from pendulum import DateTime, Duration
 from psycopg.rows import dict_row
+
 from ..classes import Datapoint
 from ..database import db_connector
 

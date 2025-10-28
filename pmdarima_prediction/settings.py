@@ -1,8 +1,9 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import HttpUrl, Field, DirectoryPath, SecretStr
-from typing import Annotated
-from pydantic.types import StringConstraints
 from pathlib import Path
+from typing import Annotated
+
+from pydantic import DirectoryPath, Field, HttpUrl, SecretStr
+from pydantic.types import StringConstraints
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):

@@ -1,9 +1,8 @@
 import psycopg
 from psycopg import Connection
+from psycopg.rows import TupleRow
 
 from .. import config
-
-from psycopg.rows import TupleRow
 
 __connection: Connection[TupleRow] | None = None
 

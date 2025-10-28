@@ -1,12 +1,10 @@
-from .. import app
-
-from flask_pydantic import validate
 import pandas
+from flask_pydantic import validate
 from pydantic import BaseModel, Field
 from pydantic_extra_types.pendulum_dt import Duration
 from sklearn import metrics
 
-
+from .. import app
 from ..classes import ConfidenceDatapoint, Prediction
 from ..controller import smart_meter_data, storage
 from ..exceptions.service_error import ServiceException

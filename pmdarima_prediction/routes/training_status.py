@@ -1,8 +1,10 @@
-from .. import app, config
 from os import path
 from threading import Thread
 from time import sleep
+
 from flask_websockets import WebSocket, WebSockets
+
+from .. import app, config
 
 websockets = WebSockets(app)
 

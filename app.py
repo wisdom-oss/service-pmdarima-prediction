@@ -1,6 +1,7 @@
-from pmdarima_prediction import Settings
-import pmdarima_prediction
 from os import makedirs
+
+import pmdarima_prediction
+from pmdarima_prediction import Settings
 
 config = Settings()
 if not config.use_s3_storage:

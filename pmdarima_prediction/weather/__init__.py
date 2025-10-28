@@ -1,21 +1,19 @@
-from .. import config
 import asyncio
-from datetime import datetime
-from typing import Annotated, Any, get_args
 import urllib
 import urllib.parse
+from datetime import datetime
+from typing import Annotated, Any, get_args
+
 import aiohttp
 import dateutil
+import httpx
 from pydantic import BaseModel, HttpUrl, ValidationError
 from pydantic.types import StringConstraints
 from pytz import utc
-import httpx
-from ..classes import (
-    SupportedCapabilities,
-    SupportedResolution,
-    WeatherCapability,
-    WeatherColumn,
-)
+
+from .. import config
+from ..classes import (SupportedCapabilities, SupportedResolution,
+                       WeatherCapability, WeatherColumn)
 from ..exceptions.service_error import ServiceException
 
 

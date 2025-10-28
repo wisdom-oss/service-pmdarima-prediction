@@ -1,4 +1,5 @@
 from flask import Flask
+
 from .settings import Settings
 
 config = Settings()

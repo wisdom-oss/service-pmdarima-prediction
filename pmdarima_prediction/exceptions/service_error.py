@@ -1,12 +1,13 @@
+from datetime import datetime
+from platform import node
+from traceback import format_exception
+from typing import Any
+
+from flask import json
 from werkzeug.exceptions import HTTPException
 from werkzeug.sansio.response import Response
 from werkzeug.wrappers.request import Request
 from werkzeug.wrappers.response import Response as WSGIResponse
-from typing import Any
-from platform import node
-from datetime import datetime
-from traceback import format_exception
-from flask import json
 
 
 class ServiceException(HTTPException):

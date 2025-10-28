@@ -1,10 +1,12 @@
-from .. import app
-
-from pydantic import BaseModel
-from ..classes import SupportedCapabilities, SupportedResolution, WeatherCapability
-from ..weather import API as weather_api
 from datetime import datetime
-from flask_pydantic import validate # type: ignore
+
+from flask_pydantic import validate  # type: ignore
+from pydantic import BaseModel
+
+from .. import app
+from ..classes import (SupportedCapabilities, SupportedResolution,
+                       WeatherCapability)
+from ..weather import API as weather_api
 
 
 class _QueryParams(BaseModel):

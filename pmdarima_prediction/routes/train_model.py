@@ -1,20 +1,21 @@
-from .. import app, config
+import base64
 from datetime import datetime
 from random import randbytes
-from flask_pydantic import validate # type: ignore
-from pydantic_extra_types.pendulum_dt import Duration, DateTime
+from threading import Thread
+
+import pandas
+from flask_pydantic import validate  # type: ignore
 from pydantic import BaseModel, Field
+from pydantic_extra_types.pendulum_dt import DateTime, Duration
+
+from .. import app, config
+from ..classes import ModelMetaData, SupportedCapabilities
+from ..controller import smart_meter_data, storage
 from ..controller.training import train_model
+from ..database import db_connector
 from ..exceptions.service_error import ServiceException
 from ..validators import validate_meter_id
-import base64
-from ..controller import storage, smart_meter_data
-from ..database import db_connector
 from ..weather import API as weather_api
-from threading import Thread
-import pandas
-
-from ..classes import ModelMetaData, SupportedCapabilities
 
 
 class _QueryParams(BaseModel):
