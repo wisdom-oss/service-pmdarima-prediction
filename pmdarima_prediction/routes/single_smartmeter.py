@@ -1,7 +1,7 @@
 from .. import app
 
 from ..classes import Datapoint
-from flask_pydantic import validate
+from flask_pydantic import validate # type: ignore
 from pydantic import BaseModel
 from pydantic_extra_types.pendulum_dt import Duration, DateTime
 
@@ -17,8 +17,8 @@ class _QueryParams(BaseModel):
     end: DateTime | None = None  # use the current datetime as upper limit
 
 
-@app.get("/measured-data/<meter_id>")
-@validate_meter_id()
+@app.get("/measured-data/<meter_id>") # type: ignore
+@validate_meter_id() 
 @validate(response_many=True)
 def get_measured_data(meter_id: str, query: _QueryParams) -> list[Datapoint]:
     """

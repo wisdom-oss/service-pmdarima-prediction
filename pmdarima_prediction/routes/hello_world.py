@@ -1,5 +1,5 @@
 from .. import app
-from flask_json import as_json
+from flask_json import as_json  # type: ignore
 
 
 @app.get("/hello-world")

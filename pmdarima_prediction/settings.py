@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import HttpUrl, Field, DirectoryPath, RedisDsn, SecretStr
+from pydantic import HttpUrl, Field, DirectoryPath, SecretStr
 from typing import Annotated
 from pydantic.types import StringConstraints
 from pathlib import Path
@@ -64,5 +64,3 @@ class Settings(BaseSettings):
     s3_access_key: str | None = Field(default=None, alias="S3_ACCESS_KEY")
     s3_secret_key: str | None = Field(default=None, alias="S3_SECRET_KEY")
     s3_bucket_name: str | None = Field(default=None, alias="S3_BUCKET_NAME")
-
-    redis_dsn: RedisDsn | None = Field(default=None, alias="REDIS_DSN")

@@ -60,7 +60,7 @@ class ModelMetaData(BaseModel):
     )
     column_name: str | None = Field(None, alias="columnName")
     training_time: Duration | None = Field(None, alias="trainingTime")
-    trained_at: DateTime | None = Field(now(), alias="trainedAt")
+    trained_at: DateTime | None = Field(now(), alias="trainedAt") # type: ignore
 
     def generate_identifier(self) -> str:
         return hashlib.md5(

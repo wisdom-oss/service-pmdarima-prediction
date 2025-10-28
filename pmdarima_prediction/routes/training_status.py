@@ -7,7 +7,7 @@ from flask_websockets import WebSocket, WebSockets
 websockets = WebSockets(app)
 
 
-@websockets.route("/training/status/<training_id>")
+@websockets.route("/training/status/<training_id>") # type: ignore
 def watch_training_status(ws: WebSocket, training_id: str) -> None:
     t = Thread(
         target=listen_to_training_updates, kwargs={"training_id": training_id, "ws": ws}

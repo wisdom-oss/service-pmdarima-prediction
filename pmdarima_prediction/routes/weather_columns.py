@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from ..classes import SupportedCapabilities, SupportedResolution, WeatherCapability
 from ..weather import API as weather_api
 from datetime import datetime
-from flask_pydantic import validate
+from flask_pydantic import validate # type: ignore
 
 
 class _QueryParams(BaseModel):

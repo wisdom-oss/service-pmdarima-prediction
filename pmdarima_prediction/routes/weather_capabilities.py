@@ -2,7 +2,7 @@ from .. import app
 from ..classes import SupportedResolution, WeatherCapability
 from ..weather import API as weather_api
 from datetime import datetime
-from flask_pydantic import validate
+from flask_pydantic import validate # type: ignore
 from pydantic import BaseModel
 
 

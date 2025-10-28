@@ -1,7 +1,7 @@
 from .. import app, config
 from datetime import datetime
 from random import randbytes
-from flask_pydantic import validate
+from flask_pydantic import validate # type: ignore
 from pydantic_extra_types.pendulum_dt import Duration, DateTime
 from pydantic import BaseModel, Field
 from ..controller.training import train_model
@@ -32,7 +32,7 @@ class _QueryParams(BaseModel):
     weather_column_name: str | None = Field(None, alias="weatherColumnName")
 
 
-@app.get("/training/start/<meter_id>")
+@app.get("/training/start/<meter_id>") # type: ignore
 @validate_meter_id()
 @validate()
 def start_model_training(meter_id: str, query: _QueryParams):
@@ -110,7 +110,6 @@ def start_model_training(meter_id: str, query: _QueryParams):
             )
 
     smartmeter_data = {d.time.isoformat(): d.value for d in observed_data}
-    print(smartmeter_data)
 
     data_series = pandas.Series(data=smartmeter_data, index=smartmeter_data.keys())
 
