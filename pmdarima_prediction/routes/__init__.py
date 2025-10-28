@@ -6,7 +6,7 @@ __all__ = [
     "single_smartmeter",
     "training_status",
     "weather_capabilities",
-    "weather_columns"
+    "weather_columns",
 ]
 
 from . import forecast_with_model

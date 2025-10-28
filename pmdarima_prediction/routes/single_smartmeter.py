@@ -1,7 +1,5 @@
 from .. import app
 
-import pendulum
-
 from ..classes import Datapoint
 from flask_pydantic import validate
 from pydantic import BaseModel

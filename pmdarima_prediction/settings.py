@@ -3,7 +3,6 @@ from pydantic import HttpUrl, Field, DirectoryPath, RedisDsn, SecretStr
 from typing import Annotated
 from pydantic.types import StringConstraints
 from pathlib import Path
-from os import makedirs
 
 
 class Settings(BaseSettings):
@@ -66,4 +65,4 @@ class Settings(BaseSettings):
     s3_secret_key: str | None = Field(default=None, alias="S3_SECRET_KEY")
     s3_bucket_name: str | None = Field(default=None, alias="S3_BUCKET_NAME")
 
-    redis_dsn: RedisDsn | None = Field(default=None, alias="REDIS_DSN")        
+    redis_dsn: RedisDsn | None = Field(default=None, alias="REDIS_DSN")

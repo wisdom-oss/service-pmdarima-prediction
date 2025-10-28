@@ -1,6 +1,5 @@
 import hashlib
 from typing import Literal, Tuple
-from pmdarima import ARIMA
 from pydantic import BaseModel, Field
 from datetime import datetime
 from pendulum import now
