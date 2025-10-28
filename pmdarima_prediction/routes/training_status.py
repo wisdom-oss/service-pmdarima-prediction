@@ -1,10 +1,8 @@
 from .. import app, config
-from contextlib import redirect_stdout
 from os import path
 from threading import Thread
 from time import sleep
 from flask_websockets import WebSocket, WebSockets
-import sys
 
 websockets = WebSockets(app)
 
