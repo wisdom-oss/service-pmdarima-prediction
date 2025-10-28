@@ -1,15 +1,25 @@
-# Use an official Python runtime as a parent image
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm
+# Install uv
+FROM python:3.12-slim
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# Set the working directory in the container
-WORKDIR /service-water-demand-prediction
+ENV UV_LINK_MODE=copy
+ENV UV_COMPILE_BYTECODE=1
 
-# Copy the rest of your application code into the container
-COPY . /service-water-demand-prediction/
+WORKDIR /app
 
-# Sync uv project in new environment
-RUN uv sync --locked
+# Install dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --no-editable
 
-EXPOSE 8090
+# Copy the project into the image
+ADD . /app
 
-CMD ["uv", "run", "app.py"]
+# Sync the project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+CMD ["gunicorn", "-t 0", "-b 0.0.0.0", "pmdarima_prediction:app"]
