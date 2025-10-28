@@ -1,27 +1,12 @@
-from flask import Flask
-from flask_json import FlaskJSON
+from pmdarima_prediction import Settings
+import pmdarima_prediction
 from os import makedirs
-from settings import Settings
 
 config = Settings()
-
-app = Flask(__name__)
-
-import routes.hello_world
-import routes.meter_names
-import routes.weather_capabilities
-import routes.weather_columns
-import routes.single_smartmeter
-import routes.train_model
-import routes.forecast_with_model
-
-
-if __name__ == "__main__":
-
+if not config.use_s3_storage:
     makedirs(config.result_storage_location, exist_ok=True)
     makedirs(config.example_data_storage_location, exist_ok=True)
     makedirs(config.trained_model_storage_location, exist_ok=True)
+    makedirs(config.log_storage_location, exist_ok=True)
 
-
-    app.config["JSON_USE_ENCODE_METHODS"] = True
-    app.run(host="0.0.0.0", load_dotenv=True)
+pmdarima_prediction.app.run(host="0.0.0.0", port=8000, debug=True)
