@@ -33,7 +33,7 @@ class _QueryParams(BaseModel):
     weather_column_name: str | None = Field(None, alias="weatherColumnName")
 
 
-@app.get("/training/start/<meter_id>") # type: ignore
+@app.put("/training/start/<meter_id>") # type: ignore
 @validate_meter_id()
 @validate()
 def start_model_training(meter_id: str, query: _QueryParams):
