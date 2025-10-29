@@ -1,5 +1,5 @@
 from flask_pydantic import validate  # type: ignore
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pydantic_extra_types.pendulum_dt import DateTime, Duration
 
 from .. import app
@@ -10,7 +10,7 @@ from ..validators import validate_meter_id
 
 
 class _QueryParams(BaseModel):
-    bucket_size: Duration | None = None
+    bucket_size: Duration | None = Field(None, alias="bucketSize")
     start: DateTime | None = None  # create the first possible date
     end: DateTime | None = None  # use the current datetime as upper limit
 
