@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 from pydantic_extra_types.pendulum_dt import DateTime, Duration
 
 from .. import app, config
-from ..classes import ModelMetaData, SupportedCapabilities
+from ..classes import ModelMetaData, SupportedCapabilities, TrainingInitiation
 from ..controller import smart_meter_data, storage
 from ..controller.training import train_model
 from ..database import db_connector
@@ -36,7 +36,7 @@ class _QueryParams(BaseModel):
 @app.put("/training/start/<meter_id>") # type: ignore
 @validate_meter_id()
 @validate()
-def start_model_training(meter_id: str, query: _QueryParams):
+def start_model_training(meter_id: str, query: _QueryParams) -> TrainingInitiation:
     training_id = base64.urlsafe_b64encode(randbytes(12)).decode(
         "utf-8"
     )  # take 12 random bytes to drop equal sign
@@ -125,4 +125,4 @@ def start_model_training(meter_id: str, query: _QueryParams):
         },
     )
     thread.start()
-    return {"modelID": model_id, "trainingID": training_id}
+    return TrainingInitiation(modelId=model_id, trainingId=training_id)

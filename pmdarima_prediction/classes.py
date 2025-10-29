@@ -84,3 +84,7 @@ class Prediction(BaseModel):
     r2_score: float = Field(alias="r2")
 
     datapoints: list[ConfidenceDatapoint]
+
+class TrainingInitiation(BaseModel):
+    model_id: str = Field(alias="modelId")
+    training_id: str = Field(alias="trainingId")
