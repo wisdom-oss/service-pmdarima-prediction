@@ -1,3 +1,4 @@
+from numpy.typing import ArrayLike
 import pandas
 from flask_pydantic import validate
 from pydantic import BaseModel, Field
@@ -11,7 +12,7 @@ from ..exceptions.service_error import ServiceException
 
 
 class query_parameter(BaseModel):
-    forecast_length: Duration = Field(Duration(days=1))
+    forecast_length: Duration = Field(Duration(days=1), alias="forecastLength")
     interval: Duration = Field(Duration(hours=1))
 
 
@@ -61,35 +62,28 @@ def predict(model_id: str, query: query_parameter) -> Prediction:
             "Unexcpected Return Type",
             "The prediction returned by ARIMA is not in the required type",
         )
+    
+    params: dict[str, ArrayLike] = {
+        "y_true": [e.value for e in recorded_values],
+        "y_pred": prediction
+    }
 
-    mean_absolute_error = metrics.mean_absolute_error(
-        y_true=[e.value for e in recorded_values],
-        y_pred=prediction,
-    )
+    mean_absolute_error = metrics.mean_absolute_error(**params)
 
-    mean_squared_error = metrics.mean_squared_error(
-        y_true=[e.value for e in recorded_values],
-        y_pred=prediction,
-    )
+    mean_squared_error = metrics.mean_squared_error(**params)
 
-    root_mean_squared_error = metrics.root_mean_squared_error(
-        y_true=[e.value for e in recorded_values],
-        y_pred=prediction,
-    )
+    root_mean_squared_error = metrics.root_mean_squared_error(**params)
 
-    r2_score = metrics.r2_score(
-        y_true=[e.value for e in recorded_values],
-        y_pred=prediction,
-    )
+    r2_score = metrics.r2_score(**params)
 
-    datapoints: list[ConfidenceDatapoint] = []
+    data_points: list[ConfidenceDatapoint] = []
 
     for i in range(len(prediction)):
-        datapoints.append(
+        data_points.append(
             ConfidenceDatapoint(
                 time=prediction.keys()[i].to_pydatetime(),
                 value=prediction[i],
-                confidence_interval=confidence_intervals[i],
+                confidenceInterval=confidence_intervals[i],
             )
         )
 
