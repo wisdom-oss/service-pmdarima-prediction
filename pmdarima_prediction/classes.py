@@ -73,7 +73,7 @@ class ModelMetaData(BaseModel):
 
 
 class ConfidenceDatapoint(Datapoint):
-    confidence_interval: Tuple[float, float]
+    confidence_interval: Tuple[float, float] = Field(alias="confidenceInterval")
 
 
 class Prediction(BaseModel):
