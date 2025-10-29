@@ -98,7 +98,7 @@ def get_recorded_data(
           WHERE 
             name = %s
           AND 
-            date > %s
+            date >= %s
           GROUP BY ts
           ORDER BY ts ASC;
         """
@@ -128,7 +128,9 @@ def get_recorded_data(
           WHERE 
             name = %s
           AND 
-            date BETWEEN %s AND %s
+            date >= %s
+          AND
+            date < %s
           GROUP BY ts
           ORDER BY ts ASC;
         """
