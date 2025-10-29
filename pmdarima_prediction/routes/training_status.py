@@ -1,5 +1,5 @@
+from functools import wraps
 from os import path
-from threading import Thread
 from time import sleep
 
 from flask_websockets import WebSocket, WebSockets
@@ -9,26 +9,18 @@ from .. import app, config
 websockets = WebSockets(app)
 
 
-@websockets.route("/training/status/<training_id>") # type: ignore
+@websockets.route("/training/status/<training_id>")  # type: ignore
 def watch_training_status(ws: WebSocket, training_id: str) -> None:
-    t = Thread(
-        target=listen_to_training_updates, kwargs={"training_id": training_id, "ws": ws}
-    )
-    t.start()
-    with websockets.subscribe(ws, [training_id]):
-        for _ in ws.iter_text():
-            pass
-
-
-def listen_to_training_updates(training_id: str, ws: WebSocket) -> None:
     training_log = path.join(config.log_storage_location, f"{training_id}.log")
     with open(training_log, "rt") as f:
         while True:
-            sleep(0.1)
+            sleep(0.01)
+            _ = ws.receive(0.01)
             line = f.readline().strip()
-            if line == "":
-                continue
             if line == "finished arima model training":
-                ws.close(reason="training finished")
-                break
-            websockets.publish(line, [training_id])
+                break 
+            if line != "":
+                ws.send(line)
+
+    ws.close(reason="TRAINING_FINISHED")
+
