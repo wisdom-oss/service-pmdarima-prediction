@@ -3,14 +3,15 @@ from datetime import datetime
 from typing import Literal, Tuple
 
 from pendulum import now
-from pydantic import BaseModel, Field
+from pydantic import UUID1, UUID4, BaseModel, Field
 from pydantic_extra_types.pendulum_dt import DateTime, Duration
 from pytz import utc
 
 
 class SmartMeter(BaseModel):
-    id: str
+    id: UUID4
     name: str
+    description: str | None
 
 
 class WeatherColumn(BaseModel):
@@ -51,21 +52,25 @@ class WeatherCapability(BaseModel):
 
 
 class ModelMetaData(BaseModel):
-    for_meter: str = Field(alias="meter")
-    start_point: DateTime | datetime = Field(alias="startingPoint")
-    time_span: Duration | None = Field(alias="timeSpan")
+    id: UUID4 = Field(alias="modelId")
+    for_meter: UUID4 = Field(alias="meterId")
+    start_point: DateTime | datetime | None = Field(alias="dataStartsAt")
+    end_point: DateTime | datetime | None = Field(alias="dataEndsAt")
     with_weather_capability: bool = Field(alias="withWheaterCapability")
     weather_capability: SupportedCapabilities | None = Field(
         None, alias="weatherCapability"
     )
-    column_name: str | None = Field(None, alias="columnName")
+    capability_column: str | None = Field(None, alias="capabilityColumn")
     training_time: Duration | None = Field(None, alias="trainingTime")
-    trained_at: DateTime | None = Field(now(), alias="trainedAt") # type: ignore
+    trained_at: DateTime | None = Field(now(), alias="trainedAt")  # type: ignore
+    comment: str | None = Field(None)
 
     def generate_identifier(self) -> str:
         return hashlib.md5(
             bytes(
-                self.model_dump_json(exclude=set(["training_time", "trained_at"])),
+                self.model_dump_json(
+                    exclude=set(["id", "training_time", "trained_at"])
+                ),
                 "utf-8",
             ),
             usedforsecurity=False,
@@ -84,6 +89,7 @@ class Prediction(BaseModel):
     r2_score: float = Field(alias="r2")
 
     datapoints: list[ConfidenceDatapoint]
+
 
 class TrainingInitiation(BaseModel):
     model_id: str = Field(alias="modelId")

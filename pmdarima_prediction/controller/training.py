@@ -1,16 +1,19 @@
 import logging
 import warnings
 from contextlib import redirect_stdout
+from datetime import datetime
 from os import path
 from time import time
 
 import pandas as pd
 import pmdarima as pmd
 from pydantic_extra_types.pendulum_dt import Duration
+from sqlalchemy import insert
 
 from .. import config
 from ..classes import ModelMetaData
-from ..controller import storage
+from ..database.db_connector import create_connection
+from ..tables import Models
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
@@ -27,11 +30,10 @@ def train_model(
         with redirect_stdout(f):
             print(f"initializing training for model {model_id}")
 
-            # TODO: implement redis client to signalize training of model to other instances
-
             first_differencing_order = pmd.arima.ndiffs(
                 smartmeter_data.array, test="adf"
             )
+
             print(f"computed {first_differencing_order=}")
 
             if len(smartmeter_data) > 24:
@@ -63,6 +65,24 @@ def train_model(
                 raise ValueError("pmdarima returned non-ARIMA model")
 
             metadata.training_time = Duration(seconds=(end_time - start_time))
-            storage.store_model(model, metadata)
 
-            print("DONE TRAINING")
+        query = insert(Models).values(
+            id=metadata.id,
+            hash=metadata.generate_identifier(),
+            meter=metadata.for_meter,
+            comment=metadata.comment,
+            training_start=datetime.fromtimestamp(start_time),
+            training_duration=metadata.training_time,
+            base_data_start=metadata.start_point,
+            base_data_end=metadata.end_point,
+            weather_capability=metadata.weather_capability,
+            capability_column=metadata.capability_column,
+            pickled_model=model,
+        )
+
+        print("storing model in database")
+        with create_connection() as conn:
+            conn.execute(query)
+            conn.commit()
+
+        print("model training finished")

@@ -2,10 +2,12 @@ from typing import Any
 
 import isodate
 from pendulum import DateTime, Duration
-from psycopg.rows import dict_row
+from sqlalchemy import Select, TextClause, func, select, text
+from sqlalchemy.sql.operators import and_
 
 from ..classes import Datapoint
 from ..database import db_connector
+from ..tables import Data
 
 
 def get_recorded_data(
@@ -26,128 +28,113 @@ def get_recorded_data(
     :return: Description
     :rtype: list[Datapoint]
     """
-
-    query: str = ""
-
-    params: list[Any] = []
+    query: TextClause | Select[Any] | None = None
+    params: dict[str, Any] = {}
 
     if start_point is None and end_point is None and bucket_size is None:
-        query = """
-          SELECT value, date as ts
-          FROM timeseries.water_demand_prediction
-          WHERE name=%s
-          ORDER BY ts ASC;
-        """
-
-        params = [meter_id]
+        query = select(Data).where(Data.c.meter == meter_id)
 
     if start_point is None and end_point is None and bucket_size is not None:
-        query = """
-          SELECT sum(value) as value, time_bucket(%s, date) + %s::INTERVAL as ts
+        query = text("""
+        SELECT time_bucket(:bucket_size, date) + :bucket_size ::INTERVAL as date, sum(value) as value
           FROM timeseries.water_demand_prediction
-          WHERE name = %s
+          WHERE meter = :meter_id
           GROUP BY ts
           ORDER BY ts ASC;
-        """
+        """)
         _bucket_size = isodate.duration_isoformat(bucket_size.as_timedelta())
-        params = [_bucket_size, _bucket_size, meter_id]
+        params = {"bucket_size": _bucket_size, "meter_id": meter_id}
 
     if start_point is None and end_point is not None and bucket_size is None:
-        query = """
-          SELECT value, date as ts
-          FROM timeseries.water_demand_prediction
-          WHERE 
-            name = %s
-          AND
-            date < %s
-          ORDER BY ts ASC;
-        """
-        params = [meter_id, end_point.isoformat()]
+        query = select(Data).where(
+            and_(
+                Data.c.meter == meter_id,
+                Data.c.date < end_point,
+            )
+        )
 
     if start_point is not None and end_point is None and bucket_size is None:
-        query = """
-          SELECT value, date as ts
-          FROM timeseries.water_demand_prediction
-          WHERE 
-            name = %s
-          AND
-            date > %s
-          ORDER BY ts ASC;
-        """
-        params = [meter_id, start_point.isoformat()]
+        query = select(Data).where(
+            and_(
+                Data.c.meter == meter_id,
+                Data.c.date >= start_point,
+            )
+        )
 
     if start_point is None and end_point is not None and bucket_size is not None:
-        query = """
-          SELECT sum(value) as value, time_bucket(%s, date) + %s::INTERVAL as ts
+        query = text("""
+        SELECT time_bucket(:bucket_size, date) + :bucket_size ::INTERVAL as date, sum(value) as value
           FROM timeseries.water_demand_prediction
-          WHERE 
-            name = %s
-          AND 
-            date < %s
+          WHERE
+            meter = :meter_id
+          AND
+            date < :end_date
           GROUP BY ts
           ORDER BY ts ASC;
-        """
+        """)
         _bucket_size = isodate.duration_isoformat(bucket_size.as_timedelta())
-
-        params = [_bucket_size, _bucket_size, meter_id, end_point.isoformat()]
+        params = {
+            "bucket_size": _bucket_size,
+            "meter_id": meter_id,
+            "end_date": end_point,
+        }
 
     if start_point is not None and end_point is None and bucket_size is not None:
-        query = """
-          SELECT sum(value) as value, time_bucket(%s, date) + %s::INTERVAL as ts
+        query = text("""
+          SELECT time_bucket(:bucket_size, date) + :bucket_size ::INTERVAL as date, sum(value) as value
           FROM timeseries.water_demand_prediction
-          WHERE 
-            name = %s
-          AND 
-            date >= %s
+          WHERE
+            meter = :meter_id
+          AND
+            date >= :start_date
           GROUP BY ts
           ORDER BY ts ASC;
-        """
+        """)
         _bucket_size = isodate.duration_isoformat(bucket_size.as_timedelta())
 
-        params = [_bucket_size, _bucket_size, meter_id, start_point.isoformat()]
+        params = {
+            "bucket_size": _bucket_size,
+            "meter_id": meter_id,
+            "start_date": start_point,
+        }
 
     if start_point is not None and end_point is not None and bucket_size is None:
-        query = """
-          SELECT value, date as ts
-          FROM timeseries.water_demand_prediction
-          WHERE 
-            name = %s
-          AND 
-            date >= %s
-          AND
-            date < %s
-          ORDER BY ts ASC;
-        """
-
-        params = [meter_id, start_point.isoformat(), end_point.isoformat()]
+        query = select(Data).where(
+            and_(
+                and_(
+                    Data.c.meter == meter_id,
+                    Data.c.date < end_point,
+                ),
+                Data.c.date >= start_point,
+            )
+        )
 
     if start_point is not None and end_point is not None and bucket_size is not None:
-        query = """
-          SELECT sum(value) as value, time_bucket(%s, date) + %s::INTERVAL as ts
+        query = text("""
+          SELECT time_bucket(:bucket_size, date) + :bucket_size ::INTERVAL as date, sum(value) as value
           FROM timeseries.water_demand_prediction
-          WHERE 
-            name = %s
-          AND 
-            date >= %s
+          WHERE
+            name = :meter_id
           AND
-            date < %s
+            date >= :start_date
+          AND
+            date < :end_date
           GROUP BY ts
           ORDER BY ts ASC;
-        """
+        """)
         _bucket_size = isodate.duration_isoformat(bucket_size.as_timedelta())
 
-        params = [
-            _bucket_size,
-            _bucket_size,
-            meter_id,
-            start_point.isoformat(),
-            end_point.isoformat(),
-        ]
+        params = {
+            "bucket_size": _bucket_size,
+            "meter_id": meter_id,
+            "start_date": start_point,
+            "end_date": end_point,
+        }
 
+    if query is None:
+        raise ValueError("unable to query with nonexistent query")
     with db_connector.create_connection() as conn:
-        with conn.cursor(row_factory=dict_row) as cursor:
-            cursor.execute(query, params)
-
-            return [
-                Datapoint(time=e["ts"], value=e["value"]) for e in cursor.fetchall()
-            ]
+        result = conn.execute(query, params if isinstance(query, TextClause) else None)
+        return [
+            Datapoint(time=e["date"], value=e["value"]) for e in result.mappings().all()
+        ]

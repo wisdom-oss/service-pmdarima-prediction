@@ -15,12 +15,12 @@ class _QueryParams(BaseModel):
     end: DateTime | None = None  # use the current datetime as upper limit
 
 
-@app.get("/measured-data/<meter_id>") # type: ignore
-@validate_meter_id() 
+@app.get("/meters/<meter_id>/recorded-usages")  # type: ignore
+@validate_meter_id()
 @validate(response_many=True)
 def get_measured_data(meter_id: str, query: _QueryParams) -> list[Datapoint]:
     """
-    GET /measured-data/:meter_id
+    GET /meters/:meter_id/recorded-usages
 
     Get the measured data points
     """

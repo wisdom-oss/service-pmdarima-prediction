@@ -1,10 +1,8 @@
-import psycopg
-from psycopg import Connection
-from psycopg.rows import TupleRow
+from sqlalchemy import URL, Connection, Engine, create_engine
 
 from .. import config
 
-__connection: Connection[TupleRow] | None = None
+__connection: Engine | None = None
 
 
 def create_connection() -> Connection:
@@ -15,13 +13,14 @@ def create_connection() -> Connection:
     """
     global __connection
 
-    if __connection is None or __connection.closed:
-        __connection = psycopg.connect(
-            dbname=config.db_name,
-            user=config.db_user,
+    if __connection is None:
+        __url = URL.create(
+            drivername="postgresql",
+            username=config.db_user,
             password=config.db_password.get_secret_value(),
             host=config.db_host,
-            port=config.db_port,
+            database=config.db_name,
         )
+        __connection = create_engine(__url)
 
-    return __connection
+    return __connection.connect()

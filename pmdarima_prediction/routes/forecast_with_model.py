@@ -1,14 +1,19 @@
-from numpy.typing import ArrayLike
 import pandas
 from flask_pydantic import validate
+from numpy.typing import ArrayLike
+from pmdarima import ARIMA
 from pydantic import BaseModel, Field
 from pydantic_extra_types.pendulum_dt import Duration
 from sklearn import metrics
+from sqlalchemy import select
 
 from .. import app
-from ..classes import ConfidenceDatapoint, Prediction
+from ..classes import ConfidenceDatapoint, ModelMetaData, Prediction
 from ..controller import smart_meter_data, storage
+from ..database.db_connector import create_connection
 from ..exceptions.service_error import ServiceException
+from ..tables import Models
+from ..validators import validate_model_id
 
 
 class query_parameter(BaseModel):
@@ -17,26 +22,40 @@ class query_parameter(BaseModel):
 
 
 @app.get("/predict/<model_id>")
+@validate_model_id()
 @validate(response_by_alias=True)
 def predict(model_id: str, query: query_parameter) -> Prediction:
-    model_meta = storage.load_metdata_for_model(model_id)
-    if model_meta.time_span is None:
+    with create_connection() as conn:
+        db_query = select(Models).where(Models.c.id == model_id).limit(1)
+        result = conn.execute(db_query).mappings().fetchall()[0]
+
+    model_meta = ModelMetaData(
+        modelId=result["id"],
+        meterId=result["meter"],
+        dataStartsAt=result["base_data_start"],
+        dataEndsAt=result["base_data_end"],
+        withWheaterCapability=result["weather_capability"] is not None,
+    )
+
+    if model_meta.end_point is None:
         raise ServiceException(
             "",
             500,
-            "Stored Model Defect",
-            "The stored model has a defect and cannot be used for predictions. Please delete the model, retrain it and try again",
+            "Model Not Usable for predictions",
+            "Due to a defect in the model storage, the model cannot be used for predictions",
         )
 
-    model_ends = model_meta.start_point + model_meta.time_span
-    forecast_ends = model_ends + query.forecast_length
+    forecast_ends = model_meta.end_point + query.forecast_length
 
     prediction_labels = pandas.date_range(
-        start=model_ends, end=forecast_ends, freq=query.interval, inclusive="right"
+        start=model_meta.end_point,
+        end=forecast_ends,
+        freq=query.interval,
+        inclusive="right",
     )
 
     recorded_values = smart_meter_data.get_recorded_data(
-        meter_id=model_meta.for_meter,
+        meter_id=model_meta.for_meter.hex,
         start_point=prediction_labels[0].to_pydatetime(),
         end_point=prediction_labels[-1].to_pydatetime()
         + query.interval,  # extend the recorded data retrieval by one interval
@@ -50,7 +69,7 @@ def predict(model_id: str, query: query_parameter) -> Prediction:
             "The forecast cannot be validated with recorded data. Please decrease the forecast size or move the starting point further back",
         )
 
-    model = storage.load_model_by_id(model_id)
+    model: ARIMA = result["pickled_model"]
     prediction, confidence_intervals = model.predict(
         n_periods=len(prediction_labels), return_conf_int=True, alpha=0.1
     )
@@ -62,10 +81,10 @@ def predict(model_id: str, query: query_parameter) -> Prediction:
             "Unexcpected Return Type",
             "The prediction returned by ARIMA is not in the required type",
         )
-    
+
     params: dict[str, ArrayLike] = {
         "y_true": [e.value for e in recorded_values],
-        "y_pred": prediction
+        "y_pred": prediction,
     }
 
     mean_absolute_error = metrics.mean_absolute_error(**params)
@@ -93,5 +112,5 @@ def predict(model_id: str, query: query_parameter) -> Prediction:
         mse=mean_squared_error,
         rmse=root_mean_squared_error,
         r2=r2_score,
-        datapoints=datapoints,
+        datapoints=data_points,
     )

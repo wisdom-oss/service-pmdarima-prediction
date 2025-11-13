@@ -1,21 +1,23 @@
 import base64
+import uuid
 from datetime import datetime
 from random import randbytes
 from threading import Thread
 
 import pandas
 from flask_pydantic import validate  # type: ignore
-from pydantic import BaseModel, Field
+from pydantic import UUID4, BaseModel, Field
 from pydantic_extra_types.pendulum_dt import DateTime, Duration
+from sqlalchemy import func, select
 
 from .. import app, config
 from ..classes import ModelMetaData, SupportedCapabilities, TrainingInitiation
 from ..controller import smart_meter_data, storage
 from ..controller.training import train_model
-from ..database import db_connector
+from ..database.db_connector import create_connection
 from ..exceptions.service_error import ServiceException
+from ..tables import Data, Models
 from ..validators import validate_meter_id
-from ..weather import API as weather_api
 
 
 class _QueryParams(BaseModel):
@@ -32,74 +34,60 @@ class _QueryParams(BaseModel):
 
     weather_column_name: str | None = Field(None, alias="weatherColumnName")
 
+    comment: str | None = Field(None)
 
-@app.put("/training/start/<meter_id>") # type: ignore
+
+@app.put("/training/start/<meter_id>")  # type: ignore
 @validate_meter_id()
 @validate()
-def start_model_training(meter_id: str, query: _QueryParams) -> TrainingInitiation:
+def start_model_training(meter_id: UUID4, query: _QueryParams) -> TrainingInitiation:
     training_id = base64.urlsafe_b64encode(randbytes(12)).decode(
         "utf-8"
     )  # take 12 random bytes to drop equal sign
 
     if query.start_point is None:
-        with db_connector.create_connection() as conn:
-            with conn.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT date
-                    FROM timeseries.water_demand_prediction
-                    WHERE name=%s
-                    ORDER BY date ASC
-                    LIMIT 1; 
-                    """,
-                    [meter_id],
-                )
+        with create_connection() as conn:
+            db_query = (
+                select(Data.c.date)
+                .where(Data.c.meter == meter_id)
+                .order_by(Data.c.date)
+                .limit(1)
+            )
 
-                results = cursor.fetchone()
-                if results is not None:
-                    if not isinstance(results[0], datetime):
-                        raise ServiceException(
-                            "",
-                            500,
-                            "Unable to determine start point automatically",
-                            "The service is unable to determine the start point for the model training. Please specify it manually",
-                        )
-                    query.start_point = results[0]
-                else:
-                    raise ServiceException(
-                        "",
-                        500,
-                        "Unable to determine start point automatically",
-                        "The service is unable to determine the start point for the model training. Please specify it manually",
-                    )
+            query.start_point = conn.execute(db_query).scalar()
 
-    metadata = ModelMetaData(
-        meter=meter_id,
-        startingPoint=query.start_point,
-        timeSpan=query.time_span,
-        withWheaterCapability=query.weather_capability is not None,
-        weatherCapability=query.weather_capability,
-        columnName=query.weather_column_name,
-    )
-
-    model_id = metadata.generate_identifier()
-
-    if storage.model_exists(model_id) and not config.allow_overwriting_models:
-        raise ServiceException(
-            "",
-            409,
-            "Model Overwriting not Allowed",
-            "The current configuration of the service does not allow for overwriting already existing models. Please train a new model with different parameters",
-        )
-
-    if query.time_span is not None:
+    if query.time_span is not None and query.start_point is not None:
         end_point = query.start_point + query.time_span.as_timedelta()
     else:
         end_point = None
 
     observed_data = smart_meter_data.get_recorded_data(
-        meter_id, metadata.start_point, end_point, None
+        str(meter_id), query.start_point, end_point, None
     )
+
+    metadata = ModelMetaData(
+        modelId=uuid.uuid4(),
+        meterId=meter_id,
+        dataStartsAt=observed_data[0].time,
+        dataEndsAt=observed_data[-1].time,
+        comment=query.comment,
+        withWheaterCapability=query.weather_capability is not None,
+        weatherCapability=query.weather_capability,
+        capabilityColumn=query.weather_column_name,
+    )
+
+    model_hash = metadata.generate_identifier()
+
+    with create_connection() as conn:
+        db_query = select(func.count(Models.c.hash)).where(Models.c.hash == model_hash)
+        count = conn.execute(db_query).scalar_one()
+        if count >= 1:
+            raise ServiceException(
+                "",
+                409,
+                "Model Already Exists",
+                "The model you are trying to train already exists and cannot be retrained.",
+            )
 
     if query.weather_capability is not None:
         if query.weather_column_name is None:
@@ -117,7 +105,7 @@ def start_model_training(meter_id: str, query: _QueryParams) -> TrainingInitiati
     thread = Thread(
         target=train_model,
         kwargs={
-            "model_id": model_id,
+            "model_id": model_hash,
             "training_id": training_id,
             "metadata": metadata,
             "smartmeter_data": data_series,
@@ -125,4 +113,4 @@ def start_model_training(meter_id: str, query: _QueryParams) -> TrainingInitiati
         },
     )
     thread.start()
-    return TrainingInitiation(modelId=model_id, trainingId=training_id)
+    return TrainingInitiation(modelId=model_hash, trainingId=training_id)
