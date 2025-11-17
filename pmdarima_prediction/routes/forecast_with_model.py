@@ -34,7 +34,7 @@ def predict(model_id: str, query: query_parameter) -> Prediction:
         meterId=result["meter"],
         dataStartsAt=result["base_data_start"],
         dataEndsAt=result["base_data_end"],
-        withWheaterCapability=result["weather_capability"] is not None,
+        withWeatherCapability=result["weather_capability"] is not None,
     )
 
     if model_meta.end_point is None:

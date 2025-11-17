@@ -56,7 +56,7 @@ class ModelMetaData(BaseModel):
     for_meter: UUID4 = Field(alias="meterId")
     start_point: DateTime | datetime | None = Field(alias="dataStartsAt")
     end_point: DateTime | datetime | None = Field(alias="dataEndsAt")
-    with_weather_capability: bool = Field(alias="withWheaterCapability")
+    with_weather_capability: bool = Field(alias="withWeatherCapability")
     weather_capability: SupportedCapabilities | None = Field(
         None, alias="weatherCapability"
     )

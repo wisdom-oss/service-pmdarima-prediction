@@ -71,7 +71,7 @@ def start_model_training(meter_id: UUID4, query: _QueryParams) -> TrainingInitia
         dataStartsAt=observed_data[0].time,
         dataEndsAt=observed_data[-1].time,
         comment=query.comment,
-        withWheaterCapability=query.weather_capability is not None,
+        withWeatherCapability=query.weather_capability is not None,
         weatherCapability=query.weather_capability,
         capabilityColumn=query.weather_column_name,
     )

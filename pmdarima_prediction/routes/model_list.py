@@ -33,7 +33,7 @@ def get_trained_models() -> list[ModelMetaData]:
                 trainingTime=r["training_duration"],
                 dataStartsAt=r["base_data_start"],
                 dataEndsAt=r["base_data_end"],
-                withWheaterCapability=r["weather_capability"] is not None,
+                withWeatherCapability=r["weather_capability"] is not None,
                 weatherCapability=r["weather_capability"],
                 capabilityColumn=r["capability_column"],
             )
