@@ -6,13 +6,14 @@ from threading import Thread
 
 import pandas
 from flask_pydantic import validate  # type: ignore
-from pydantic import UUID4, BaseModel, Field
+from pydantic import UUID4, BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 from pydantic_extra_types.pendulum_dt import DateTime, Duration
 from sqlalchemy import func, select
 
-from .. import app, config
+from .. import app
 from ..classes import ModelMetaData, SupportedCapabilities, TrainingInitiation
-from ..controller import smart_meter_data, storage
+from ..controller import smart_meter_data
 from ..controller.training import train_model
 from ..database.db_connector import create_connection
 from ..exceptions.service_error import ServiceException
@@ -35,6 +36,15 @@ class _QueryParams(BaseModel):
     weather_column_name: str | None = Field(None, alias="weatherColumnName")
 
     comment: str | None = Field(None)
+
+
+class _Response(BaseModel):
+    model_config = ConfigDict(
+        validate_by_name=True, validate_by_alias=False, alias_generator=to_camel
+    )
+
+    model_id: UUID4 = Field(alias="modelId")
+    training_id: str = Field(alias="trainingId")
 
 
 @app.put("/training/start/<meter_id>")  # type: ignore

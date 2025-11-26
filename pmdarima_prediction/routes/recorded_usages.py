@@ -3,9 +3,9 @@ from pydantic import BaseModel, Field
 from pydantic_extra_types.pendulum_dt import DateTime, Duration
 
 from .. import app
-from ..classes import Datapoint
 from ..controller import smart_meter_data
 from ..exceptions.service_error import ServiceException
+from ..models import Datapoint
 from ..validators import validate_meter_id
 
 
@@ -17,7 +17,7 @@ class _QueryParams(BaseModel):
 
 @app.get("/meters/<meter_id>/recorded-usages")  # type: ignore
 @validate_meter_id()
-@validate(response_many=True)
+@validate(response_many=True, exclude_none=True, response_by_alias=True)
 def get_measured_data(meter_id: str, query: _QueryParams) -> list[Datapoint]:
     """
     GET /meters/:meter_id/recorded-usages

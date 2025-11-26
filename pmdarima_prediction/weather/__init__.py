@@ -11,10 +11,13 @@ from pydantic import BaseModel, HttpUrl, ValidationError
 from pydantic.types import StringConstraints
 from pytz import utc
 
+from pmdarima_prediction.classes import SupportedResolution
+
 from .. import config
-from ..classes import (SupportedCapabilities, SupportedResolution,
-                       WeatherCapability, WeatherColumn)
+from ..enums import SupportedCapabilities, SupportedResolutions
 from ..exceptions.service_error import ServiceException
+from ..models.weather_capability import WeatherCapability
+from ..models.weather_column import WeatherColumn
 
 
 class _api(BaseModel):
@@ -34,7 +37,7 @@ class _api(BaseModel):
         self,
         start: datetime | None = None,
         end: datetime | None = None,
-        resolution: SupportedResolution | None = None,
+        resolution: SupportedResolutions | None = None,
     ) -> list[WeatherCapability]:
         """
         Get the available capabilites of the configured station
@@ -97,8 +100,12 @@ class _api(BaseModel):
             # Check if the resolution adheres to the literals SupportedResolution
             # and if the data type is one of the supported capabilities
             try:
-                assert station_capability["resolution"] in get_args(SupportedResolution)
-                assert station_capability["dataType"] in get_args(SupportedCapabilities)
+                assert station_capability["resolution"] in get_args(
+                    SupportedResolutions._member_names_
+                )
+                assert station_capability["dataType"] in get_args(
+                    SupportedCapabilities._member_names_
+                )
             except AssertionError:
                 continue
 
@@ -119,7 +126,7 @@ class _api(BaseModel):
 
     async def get_available_capability_columns(
         self,
-        resolution: SupportedResolution | None = "hourly",
+        resolution: SupportedResolutions | None = SupportedResolutions.hourly,
         start: datetime | None = None,
         end: datetime | None = None,
         for_capabilities: list[SupportedCapabilities]
@@ -210,19 +217,19 @@ class _api(BaseModel):
                     continue
 
                 column = WeatherColumn(
-                    column_name=field["name"],
+                    name=field["name"],
                     description=field["description"],
-                    forDataFrom=field_from,
-                    forDataUntil=field_until,
+                    for_data_from=field_from,
+                    for_data_until=field_until,
                 )
                 columns.add(column)
 
             capability = WeatherCapability(
-                capability=data_type,
+                capability=SupportedCapabilities(data_type),
                 columns=list(columns),
                 availableFrom=start,
                 availableUntil=end,
-                resolution="hourly",
+                resolution=SupportedResolutions.hourly,
             )
             capabilities.append(capability)
 

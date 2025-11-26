@@ -1,41 +1,28 @@
 from flask_pydantic import validate  # type: ignore
-from sqlalchemy import select
+from sqlmodel import Session, select
 
 from .. import app
-from ..classes import ModelMetaData
 from ..database import db_connector
-from ..tables import Models
+from ..models import TrainedModel
 
 
 @app.get("/models")
 @validate(response_many=True, response_by_alias=True)
-def get_trained_models() -> list[ModelMetaData]:
-    with db_connector.create_connection() as db:
+def get_trained_models() -> list[TrainedModel]:
+    with Session(db_connector.get_engine()) as db:
         query = select(
-            Models.c.id,
-            Models.c.meter,
-            Models.c.comment,
-            Models.c.training_start,
-            Models.c.training_duration,
-            Models.c.base_data_start,
-            Models.c.base_data_end,
-            Models.c.weather_capability,
-            Models.c.capability_column,
+            TrainedModel.id,
+            TrainedModel.meter,
+            TrainedModel.hash,
+            TrainedModel.comment,
+            TrainedModel.training_start,
+            TrainedModel.training_duration,
+            TrainedModel.base_data_start,
+            TrainedModel.base_data_end,
+            TrainedModel.weather_capability,
+            TrainedModel.capability_column,
         )
 
-        result = db.execute(query)
-        return [
-            ModelMetaData(
-                modelId=r["id"],
-                meterId=r["meter"],
-                comment=r["comment"],
-                trainedAt=r["training_start"],
-                trainingTime=r["training_duration"],
-                dataStartsAt=r["base_data_start"],
-                dataEndsAt=r["base_data_end"],
-                withWeatherCapability=r["weather_capability"] is not None,
-                weatherCapability=r["weather_capability"],
-                capabilityColumn=r["capability_column"],
-            )
-            for r in result.mappings().all()
-        ]
+        result = db.exec(query)
+        models = result.all()
+        return [TrainedModel.model_validate(m) for m in models]

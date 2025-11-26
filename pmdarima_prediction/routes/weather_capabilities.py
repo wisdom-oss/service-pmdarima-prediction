@@ -4,14 +4,15 @@ from flask_pydantic import validate  # type: ignore
 from pydantic import BaseModel
 
 from .. import app
-from ..classes import SupportedResolution, WeatherCapability
+from ..enums import SupportedResolutions
+from ..models import WeatherCapability
 from ..weather import API as weather_api
 
 
 class _QueryParams(BaseModel):
     start: datetime | None = None
     end: datetime | None = None
-    resolution: SupportedResolution | None = None
+    resolution: SupportedResolutions | None = None
 
 
 @app.get("/weather-capabilities")
