@@ -5,8 +5,8 @@ from pendulum import DateTime, Duration
 from sqlalchemy import Select, TextClause, func, select, text
 from sqlalchemy.sql.operators import and_
 
-from ..classes import Datapoint
 from ..database import db_connector
+from ..models import Datapoint
 from ..tables import Data
 
 
@@ -36,7 +36,7 @@ def get_recorded_data(
 
     if start_point is None and end_point is None and bucket_size is not None:
         query = text("""
-        SELECT time_bucket(:bucket_size, date) + :bucket_size ::INTERVAL as date, sum(value) as value
+        SELECT time_bucket(:bucket_size, date) + :bucket_size ::INTERVAL as ts, sum(value) as value
           FROM timeseries.water_demand_prediction
           WHERE meter = :meter_id
           GROUP BY ts
@@ -111,21 +111,19 @@ def get_recorded_data(
 
     if start_point is not None and end_point is not None and bucket_size is not None:
         query = text("""
-          SELECT time_bucket(:bucket_size, date) + :bucket_size ::INTERVAL as date, sum(value) as value
+          SELECT (time_bucket(:bucket_size, date) + :bucket_size) as ts, sum(value) as value
           FROM timeseries.water_demand_prediction
           WHERE
-            name = :meter_id
+            meter = :meter_id
           AND
             date >= :start_date
           AND
-            date < :end_date
+            date <= :end_date
           GROUP BY ts
           ORDER BY ts ASC;
         """)
-        _bucket_size = isodate.duration_isoformat(bucket_size.as_timedelta())
-
         params = {
-            "bucket_size": _bucket_size,
+            "bucket_size": bucket_size,
             "meter_id": meter_id,
             "start_date": start_point,
             "end_date": end_point,
@@ -136,5 +134,6 @@ def get_recorded_data(
     with db_connector.create_connection() as conn:
         result = conn.execute(query, params if isinstance(query, TextClause) else None)
         return [
-            Datapoint(time=e["date"], value=e["value"]) for e in result.mappings().all()
+            Datapoint(time=(e["date"] if "ts" not in e else e["ts"]), value=e["value"])
+            for e in result.mappings().all()
         ]
