@@ -1,10 +1,11 @@
-from flask import Flask
-from werkzeug.exceptions import HTTPException
+from os import makedirs
 
-from .exceptions import ServiceException
+from flask import Flask
+
 from .settings import Settings
 
 config = Settings()  # pyright:ignore reportCallIssue
+makedirs(config.log_storage_location, exist_ok=True)
 
 app = Flask(__name__)
 
