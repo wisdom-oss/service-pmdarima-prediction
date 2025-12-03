@@ -1,6 +1,7 @@
 import hashlib
 from datetime import datetime
 from typing import Literal, Tuple
+from uuid import uuid4
 
 from pendulum import now
 from pydantic import UUID1, UUID4, BaseModel, Field
@@ -15,7 +16,7 @@ class SmartMeter(BaseModel):
 
 
 class WeatherColumn(BaseModel):
-    column_name: str
+    column_name: str = Field(alias="columnName")
     description: str
     for_data_from: datetime = Field(alias="forDataFrom")
     for_data_until: datetime = Field(alias="forDataUntil")
@@ -91,5 +92,4 @@ class Prediction(BaseModel):
 
 
 class TrainingInitiation(BaseModel):
-    model_id: str = Field(alias="modelId")
     training_id: str = Field(alias="trainingId")
