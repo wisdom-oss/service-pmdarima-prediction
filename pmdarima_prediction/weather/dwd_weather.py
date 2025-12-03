@@ -1,4 +1,3 @@
-import logging
 import os
 
 import pandas as pd
@@ -13,7 +12,6 @@ def load_dwd_api() -> str | None:
     weather_station = os.getenv("WEATHER_STATION")
 
     if not dwd_api_raw or not weather_station:
-        logging.debug("DWD_API not set in .env")
         raise TypeError("DWD_API_V1 or WEATHER_STATION env variables not set")
 
     dwd_api = dwd_api_raw + weather_station
@@ -41,19 +39,12 @@ def get_weather_capabilities(req_cols: bool) -> dict[str, list[str]]:
 
         # rule out every datatype not having hourly data or not inside the timeframe of the data
         if entry["resolution"] != "hourly":
-            logging.debug(
-                f"{entry['dataType']} not available, because of resolution: {entry['resolution']}"
-            )
             continue
+
         if entry["availableFrom"] > min_date:
-            logging.debug(
-                f"{entry['dataType']} not available, because of MIN: {entry['availableFrom']}"
-            )
             continue
+
         if entry["availableUntil"] < max_date:
-            logging.debug(
-                f"{entry['dataType']} not available, because of MAX: {entry['availableUntil']}"
-            )
             continue
 
         # add dict entries when requesting columns
@@ -84,7 +75,6 @@ def get_columns_of_weather(capabilities: dict[str, list[str]]) -> dict[str, list
 
         if data.get("timeseries") and isinstance(data["timeseries"], list):
             for column in data["timeseries"][0]:
-                logging.debug(f"{column} available")
                 capabilities[capability].append(column)
 
     return capabilities
@@ -107,7 +97,6 @@ def get_columns_of_capability(capability: str) -> dict[str : list[str]]:
             for column in data["timeseries"][0]:
                 if column == "ts":
                     continue
-                logging.debug(f"{column} available")
                 capability_dict["columns"].append(column)
 
     else:
@@ -141,8 +130,8 @@ def get_weather_data(
         print(data)
 
         df = json_normalize(data["timeseries"])
-    except Exception as e:
-        logging.debug(f"DWD request failed, because: {e}")
+    except Exception:
+        pass
 
     # fill data spots inside weather data to fill in missing timestamps
     df = __fill_missing_timestamps(df, column)
