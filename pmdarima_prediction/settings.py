@@ -58,10 +58,3 @@ class Settings(BaseSettings):
     log_storage_location: DirectoryPath = Field(
         alias="LOG_STORAGE_DIRECTORY", default=Path("./.files/logs")
     )
-
-    use_s3_storage: bool = Field(default=False, alias="USE_S3_STORAGE")
-
-    s3_endpoint: str | None = Field(default=None, alias="S3_ENDPOINT")
-    s3_access_key: str | None = Field(default=None, alias="S3_ACCESS_KEY")
-    s3_secret_key: str | None = Field(default=None, alias="S3_SECRET_KEY")
-    s3_bucket_name: str | None = Field(default=None, alias="S3_BUCKET_NAME")
