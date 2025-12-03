@@ -123,4 +123,4 @@ def start_model_training(meter_id: UUID4, query: _QueryParams) -> TrainingInitia
         },
     )
     thread.start()
-    return TrainingInitiation(modelId=model_hash, trainingId=training_id)
+    return TrainingInitiation(trainingId=training_id)
