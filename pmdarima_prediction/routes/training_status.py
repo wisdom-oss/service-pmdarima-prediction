@@ -1,4 +1,3 @@
-from functools import wraps
 from os import path
 from time import sleep
 
@@ -15,7 +14,7 @@ def watch_training_status(ws: WebSocket, training_id: str) -> None:
     with open(training_log, "rt") as f:
         while True:
             sleep(0.01)
-            _ = ws.receive(0.01)
+            _ = ws.receive(0)
             line = f.readline().strip()
             if line == "finished arima model training":
                 break 
