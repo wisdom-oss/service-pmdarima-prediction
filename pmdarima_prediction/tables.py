@@ -1,17 +1,5 @@
-from sqlalchemy import (
-    TIMESTAMP,
-    UUID,
-    Column,
-    Float,
-    ForeignKey,
-    Interval,
-    MetaData,
-    Null,
-    PickleType,
-    String,
-    Table,
-    Uuid,
-)
+from sqlalchemy import (TIMESTAMP, UUID, Column, Float, ForeignKey, Interval,
+                        MetaData, Null, PickleType, String, Table, Uuid)
 
 __table_meta_data = MetaData(schema="pmdarima")
 __timeseries_meta_data = MetaData(schema="timeseries")
