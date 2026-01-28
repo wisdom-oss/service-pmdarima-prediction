@@ -101,7 +101,7 @@ def predict(model_id: UUID4, query: query_parameter) -> Prediction:
             Datapoint(
                 time=prediction.keys()[i].to_pydatetime(),
                 value=prediction[i],
-                confidence_interval=confidence_intervals[i],
+                confidence_interval=(0 if confidence_intervals[i][0] < 0 else  confidence_intervals[i][0], 0 if confidence_intervals[i][1] < 0 else confidence_intervals[i][1]),
             )
         )
 
