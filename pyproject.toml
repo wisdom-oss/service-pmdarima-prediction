@@ -28,7 +28,7 @@ dependencies = [
     "packaging==24.2",
     "pandas==2.2.3",
     "patsy==1.0.1",
-    "pillow==11.1.0",
+    "pillow==12.1.1",
     "pmdarima==2.0.4",
     "psycopg==3.2.6",
     "psycopg-binary==3.2.6",
