@@ -7,8 +7,9 @@ __all__ = [
     "weather_capabilities",
     "weather_columns",
     "model_list",
+    "training_data"
 ]
 
 from . import (forecast_with_model, meter_list, model_list, recorded_usages,
                train_model, training_status, weather_capabilities,
-               weather_columns)
+               weather_columns, training_data)
